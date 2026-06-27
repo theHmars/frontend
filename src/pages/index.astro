@@ -22,9 +22,10 @@ const postsByRegion = REGIONS.reduce((acc, region) => {
 
 
 // TIER 1: Top Stories (Mosaic Cycling)
-const topInternational = allPosts.filter(p => p.data.category === "International" || p.data.category === "Global").slice(0, 5);
-const topNational = allPosts.filter(p => p.data.category === "National").slice(0, 5);
-const topLocal = allPosts.filter(p => p.data.category === "Local").slice(0, 5);
+const hasRealImage = (p) => p.data.image && !p.data.image.includes('fallback.webp');
+const topInternational = allPosts.filter(p => (p.data.category === "International" || p.data.category === "Global") && hasRealImage(p)).slice(0, 5);
+const topNational = allPosts.filter(p => p.data.category === "National" && hasRealImage(p)).slice(0, 5);
+const topLocal = allPosts.filter(p => p.data.category === "Local" && hasRealImage(p)).slice(0, 5);
 
 const heroCombos = [];
 const numCombos = Math.min(5, Math.max(topInternational.length, topNational.length, topLocal.length));

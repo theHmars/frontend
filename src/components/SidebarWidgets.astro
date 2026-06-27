@@ -55,9 +55,16 @@ const trendingTags = Object.entries(tagCounts)
                 placeholder="EMAIL ADDRESS" 
                 class="w-full h-11 bg-neutral-900 border border-neutral-800 rounded-xl px-4 text-[10px] tracking-widest text-white focus:outline-none focus:border-neutral-600 transition-colors"
             />
-            <button onclick="alert('Newsletter subscriptions are temporarily offline while we upgrade our database. Please check back soon!'); return false;" class="w-full h-11 border border-neutral-800 text-neutral-400 rounded-xl text-[10px] font-bold tracking-[0.2em] uppercase hover:bg-white hover:text-black hover:border-white transition-all">
+            <button type="button" class="newsletter-subscribe-btn w-full h-11 border border-neutral-800 text-neutral-400 rounded-xl text-[10px] font-bold tracking-[0.2em] uppercase hover:bg-white hover:text-black hover:border-white transition-all">
                 Subscribe
             </button>
+            <script is:inline>
+                document.querySelectorAll('.newsletter-subscribe-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        alert('Newsletter subscriptions are temporarily offline while we upgrade our database. Please check back soon!');
+                    });
+                });
+            </script>
         </div>
     </div>
 

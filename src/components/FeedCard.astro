@@ -13,7 +13,7 @@ type Props = {
 const { href, date, title, description, image, category, region, badges = [] } = Astro.props;
 
 // Fallback image for news feed
-const displayImage = image || "/assets/fallback.webp";
+// Image fallback handled in template
 
 const toneClasses: Record<string, string> = {
   muted: "border-neutral-900 text-neutral-500",
