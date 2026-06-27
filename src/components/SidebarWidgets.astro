@@ -26,9 +26,9 @@ const trendingTags = Object.entries(tagCounts)
         <p class="text-xs font-light leading-relaxed text-neutral-400">
             thehmars is an independent portal. Our donation system has been temporarily deactivated while we migrate our database to Supabase. Thank you for your continued support!
         </p>
-        <a href="#" onclick="alert('The donation system has been temporarily paused while we upgrade our internal systems. Please check back later!'); return false;" class="flex items-center justify-center h-12 w-full bg-white text-black rounded-xl text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
+        <button type="button" onclick="alert('The donation system has been temporarily paused while we upgrade our internal systems. Please check back later!');" class="flex items-center justify-center h-12 w-full bg-white text-black rounded-xl text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
             Make a Contribution
-        </a>
+        </button>
     </div>
 
     {/* TRENDING TOPICS */}
@@ -83,3 +83,4 @@ const trendingTags = Object.entries(tagCounts)
             Inquire
         </a>
     </div>
+</>

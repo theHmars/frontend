@@ -11,6 +11,9 @@ export default defineConfig({
   integrations: [sitemap(), mdx(), pagefind()],
   vite: {
     plugins: [tailwindcss()],
+    build: {
+      chunkSizeWarningLimit: 1000,
+    },
   },
   markdown: {
     shikiConfig: {

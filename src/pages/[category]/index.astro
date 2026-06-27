@@ -87,10 +87,31 @@ const listPosts = remainingPosts.slice(6, 14);
           </div>
         </div>
 
+        <style>
+          .cat-hero-set { display: none; }
+          :root[data-cat-hero-cycle="0"] #cat-hero-set-0 { display: grid; }
+          :root[data-cat-hero-cycle="1"] #cat-hero-set-1 { display: grid; }
+          :root[data-cat-hero-cycle="2"] #cat-hero-set-2 { display: grid; }
+          :root[data-cat-hero-cycle="3"] #cat-hero-set-3 { display: grid; }
+          :root:not([data-cat-hero-cycle]) #cat-hero-set-0 { display: grid; }
+        </style>
+        <script is:inline define:vars={{ numCombos: heroCombos.length }}>
+          (function() {
+            try {
+              let cycle = parseInt(sessionStorage.getItem('catHeroCycle') || '-1');
+              if (numCombos > 0) {
+                cycle = (cycle + 1) % numCombos;
+                sessionStorage.setItem('catHeroCycle', cycle);
+                document.documentElement.setAttribute('data-cat-hero-cycle', cycle.toString());
+              }
+            } catch(e) {}
+          })();
+        </script>
+
         {/* TIER 1: CATEGORY HEADLINE MOSAIC (Cycling) */}
         <div id="category-cycle-container" class="relative">
           {heroCombos.map((combo, index) => (
-            <div id={`cat-hero-set-${index}`} class="cat-hero-set grid grid-cols-1 lg:grid-cols-12 gap-4 lg:h-[600px]" style="display: none;">
+            <div id={`cat-hero-set-${index}`} class="cat-hero-set grid grid-cols-1 lg:grid-cols-12 gap-4 lg:h-[600px]">
               {/* Main Large Hero */}
               {combo.mainHero && (
                 <section class="lg:col-span-8 h-full group relative overflow-hidden rounded-[2rem] md:rounded-[2.5rem] border border-neutral-800 bg-neutral-900/10 shadow-3xl transition-all duration-700 hover:border-neutral-700 hover:bg-neutral-900/30">
@@ -159,28 +180,6 @@ const listPosts = remainingPosts.slice(6, 14);
             </div>
           ))}
         </div>
-        
-        <script is:inline>
-          (function() {
-            try {
-              let cycle = parseInt(sessionStorage.getItem('catHeroCycle') || '-1');
-              const totalCombos = document.querySelectorAll('.cat-hero-set').length;
-              if (totalCombos > 0) {
-                cycle = (cycle + 1) % totalCombos;
-                sessionStorage.setItem('catHeroCycle', cycle);
-                const el = document.getElementById('cat-hero-set-' + cycle);
-                if (el) {
-                  el.style.display = 'grid';
-                }
-              }
-            } catch(e) {
-              const first = document.querySelector('.cat-hero-set');
-              if(first) first.style.display = 'grid';
-            }
-          })();
-        </script>
-
-        {/* TIER 2: CATEGORY GRID */}
         {gridPosts.length > 0 && (
           <section class="space-y-10">
             <div class="flex items-center justify-between border-b border-neutral-900 pb-4">

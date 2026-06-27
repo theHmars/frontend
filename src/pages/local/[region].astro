@@ -87,10 +87,31 @@ const gridPosts = remainingPosts.slice(0, 6);
             </div>
         ) : (
             <>
+                <style>
+                  .region-hero-set { display: none; }
+                  :root[data-region-hero-cycle="0"] #region-hero-set-0 { display: grid; }
+                  :root[data-region-hero-cycle="1"] #region-hero-set-1 { display: grid; }
+                  :root[data-region-hero-cycle="2"] #region-hero-set-2 { display: grid; }
+                  :root[data-region-hero-cycle="3"] #region-hero-set-3 { display: grid; }
+                  :root:not([data-region-hero-cycle]) #region-hero-set-0 { display: grid; }
+                </style>
+                <script is:inline define:vars={{ numCombos: heroCombos.length }}>
+                  (function() {
+                    try {
+                      let cycle = parseInt(sessionStorage.getItem('regionHeroCycle') || '-1');
+                      if (numCombos > 0) {
+                        cycle = (cycle + 1) % numCombos;
+                        sessionStorage.setItem('regionHeroCycle', cycle);
+                        document.documentElement.setAttribute('data-region-hero-cycle', cycle.toString());
+                      }
+                    } catch(e) {}
+                  })();
+                </script>
+
                 {/* TIER 1: STATE HEADLINE MOSAIC (Cycling) */}
                 <div id="region-cycle-container" class="relative">
                   {heroCombos.map((combo, index) => (
-                    <div id={`region-hero-set-${index}`} class="region-hero-set grid grid-cols-1 lg:grid-cols-12 gap-4 lg:h-[600px]" style="display: none;">
+                    <div id={`region-hero-set-${index}`} class="region-hero-set grid grid-cols-1 lg:grid-cols-12 gap-4 lg:h-[600px]">
                       {/* Main Large Hero */}
                       {combo.mainHero && (
                           <section class="lg:col-span-8 h-full group relative overflow-hidden rounded-[2rem] md:rounded-[2.5rem] border border-neutral-800 bg-neutral-900/10 shadow-3xl transition-all duration-700 hover:border-neutral-700 hover:bg-neutral-900/30">
@@ -152,28 +173,6 @@ const gridPosts = remainingPosts.slice(0, 6);
                     </div>
                   ))}
                 </div>
-
-                <script is:inline>
-                  (function() {
-                    try {
-                      let cycle = parseInt(sessionStorage.getItem('regionHeroCycle') || '-1');
-                      const totalCombos = document.querySelectorAll('.region-hero-set').length;
-                      if (totalCombos > 0) {
-                        cycle = (cycle + 1) % totalCombos;
-                        sessionStorage.setItem('regionHeroCycle', cycle);
-                        const el = document.getElementById('region-hero-set-' + cycle);
-                        if (el) {
-                          el.style.display = 'grid';
-                        }
-                      }
-                    } catch(e) {
-                      const first = document.querySelector('.region-hero-set');
-                      if(first) first.style.display = 'grid';
-                    }
-                  })();
-                </script>
-
-                {/* TIER 2: GRID */}
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 pt-12">
                     <div class="lg:col-span-8 space-y-12">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
