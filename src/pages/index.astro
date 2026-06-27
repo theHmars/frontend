@@ -21,26 +21,44 @@ const postsByRegion = REGIONS.reduce((acc, region) => {
 }, {} as Record<string, number>);
 
 
-// TIER 1: Top Stories (Mosaic)
-const featuredPost = allPosts.find(p => p.data.featured);
-const topInternational = allPosts.filter(p => p.id !== featuredPost?.id).find(p => p.data.category === "International");
-const topNational = allPosts.filter(p => p.id !== featuredPost?.id && p.id !== topInternational?.id).find(p => p.data.category === "National");
-const topLocal = allPosts.filter(p => p.id !== featuredPost?.id && p.id !== topInternational?.id && p.id !== topNational?.id).find(p => p.data.category === "Local");
+// TIER 1: Top Stories (Mosaic Cycling)
+const topInternational = allPosts.filter(p => p.data.category === "International" || p.data.category === "Global").slice(0, 5);
+const topNational = allPosts.filter(p => p.data.category === "National").slice(0, 5);
+const topLocal = allPosts.filter(p => p.data.category === "Local").slice(0, 5);
 
-let heroStories = [featuredPost, topInternational, topNational, topLocal].filter((p): p is CollectionEntry<"blog"> => !!p).slice(0, 3);
+const heroCombos = [];
+const numCombos = Math.min(5, Math.max(topInternational.length, topNational.length, topLocal.length));
 
-// Fallback to random if not enough hero stories
-if (heroStories.length < 3) {
-  const heroIds = new Set(heroStories.map(p => p.id));
-  const otherPosts = shuffleArray(allPosts.filter(p => !heroIds.has(p.id)));
-  heroStories = [...heroStories, ...otherPosts].slice(0, 3);
+for (let i = 0; i < numCombos; i++) {
+  const intPost = topInternational[i % topInternational.length];
+  const natPost = topNational[i % topNational.length];
+  const locPost = topLocal[i % topLocal.length];
+  
+  if (!intPost || !natPost || !locPost) continue;
+
+  let mainHero, sec1, sec2;
+  if (i % 3 === 0) {
+    mainHero = intPost; sec1 = natPost; sec2 = locPost;
+  } else if (i % 3 === 1) {
+    mainHero = natPost; sec1 = locPost; sec2 = intPost;
+  } else {
+    mainHero = locPost; sec1 = intPost; sec2 = natPost;
+  }
+  heroCombos.push({ mainHero, secondaryHeroes: [sec1, sec2] });
 }
 
-const mainHero = heroStories[0];
-const secondaryHeroes = heroStories.slice(1);
+// Fallback if combos are empty
+if (heroCombos.length === 0) {
+  const fallbacks = allPosts.slice(0, 3);
+  heroCombos.push({ mainHero: fallbacks[0], secondaryHeroes: [fallbacks[1], fallbacks[2]].filter(Boolean) });
+}
 
-// Exclude hero stories from subsequent tiers
-const heroIds = new Set(heroStories.map(p => p.id));
+// Exclude all used hero stories from subsequent tiers
+const heroIds = new Set();
+heroCombos.forEach(combo => {
+  if (combo.mainHero) heroIds.add(combo.mainHero.id);
+  combo.secondaryHeroes.forEach(p => p && heroIds.add(p.id));
+});
 const remainingPosts = allPosts.filter(p => !heroIds.has(p.id));
 
 // TIER 2: Grid (6)
@@ -77,74 +95,91 @@ const listPosts = remainingPosts.slice(6, 14);
           </div>
         </div>
 
-        {/* TIER 1: HEADLINE MOSAIC */}
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:h-[600px]">
-          {/* Main Large Hero */}
-          {mainHero && (
-            <section class="lg:col-span-8 h-full group relative overflow-hidden rounded-[2rem] md:rounded-[2.5rem] border border-neutral-800 bg-neutral-900/10 shadow-3xl transition-all duration-700 hover:border-neutral-700 hover:bg-neutral-900/30">
-              <a href={`/${mainHero.id.split('/').pop()}`} class="flex flex-col h-full">
-                <div class="relative flex-grow overflow-hidden bg-neutral-900">
-                  <img 
-                    src={mainHero.data.image || "/assets/fallback.webp"} 
-                    alt={mainHero.data.title}
-                    class="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105 opacity-80 group-hover:opacity-100"
-                  />
-                  <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/20 to-transparent"></div>
-                  <div class="absolute top-8 left-8">
-                    <span class="rounded-full bg-white text-black px-6 py-2 text-[10px] font-bold tracking-[0.4em] uppercase shadow-2xl">
-                      Featured
-                    </span>
-                  </div>
-                  <div class="absolute bottom-10 left-10 right-10 space-y-4">
-                    <div class="flex items-center gap-5">
-                        <span class="text-[10px] font-bold tracking-[0.4em] uppercase text-red-500">
-                          {mainHero.data.category}
+        {/* TIER 1: HEADLINE MOSAIC (Cycling) */}
+        <div id="hero-cycle-container" class="relative">
+          {heroCombos.map((combo, index) => (
+            <div id={`hero-set-${index}`} class="hero-set grid grid-cols-1 lg:grid-cols-12 gap-4 lg:h-[600px]" style="display: none;">
+              {/* Main Large Hero */}
+              {combo.mainHero && (
+                <section class="lg:col-span-8 h-full group relative overflow-hidden rounded-[2rem] md:rounded-[2.5rem] border border-neutral-800 bg-neutral-900/10 shadow-3xl transition-all duration-700 hover:border-neutral-700 hover:bg-neutral-900/30">
+                  <a href={`/${combo.mainHero.id.split('/').pop()}`} class="flex flex-col h-full">
+                    <div class="relative flex-grow overflow-hidden bg-neutral-900">
+                      <img 
+                        src={combo.mainHero.data.image || "/assets/fallback.webp"} 
+                        alt={combo.mainHero.data.title}
+                        class="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105 opacity-80 group-hover:opacity-100"
+                      />
+                      <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/20 to-transparent"></div>
+                      <div class="absolute top-8 left-8">
+                        <span class="rounded-full bg-white text-black px-6 py-2 text-[10px] font-bold tracking-[0.4em] uppercase shadow-2xl">
+                          Featured
                         </span>
-                        <span class="h-1 w-1 rounded-full bg-neutral-600"></span>
-                        <time class="text-[10px] font-medium tracking-[0.2em] text-neutral-400 uppercase">
-                          {mainHero.data.date.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
-                        </time>
+                      </div>
+                      <div class="absolute bottom-10 left-10 right-10 space-y-4">
+                        <div class="flex items-center gap-5">
+                            <span class="text-[10px] font-bold tracking-[0.4em] uppercase text-red-500">
+                              {combo.mainHero.data.category}
+                            </span>
+                            <span class="h-1 w-1 rounded-full bg-neutral-600"></span>
+                            <time class="text-[10px] font-medium tracking-[0.2em] text-neutral-400 uppercase">
+                              {combo.mainHero.data.date.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
+                            </time>
+                        </div>
+                        <h2 class="text-3xl md:text-5xl font-bold tracking-tight text-white leading-tight uppercase">
+                          {combo.mainHero.data.title}
+                        </h2>
+                      </div>
                     </div>
-                    <h2 class="text-3xl md:text-5xl font-bold tracking-tight text-white leading-tight uppercase">
-                      {mainHero.data.title}
-                    </h2>
-                  </div>
-                </div>
-              </a>
-            </section>
-          )}
+                  </a>
+                </section>
+              )}
 
-          {/* Secondary Vertical Stack */}
-          <div class="lg:col-span-4 flex flex-col gap-4">
-            {secondaryHeroes.map(post => (
-              <section class="flex-1 group relative overflow-hidden rounded-[2rem] border border-neutral-800 bg-neutral-900/10 transition-all duration-500 hover:border-neutral-700 hover:bg-neutral-900/30 h-[290px]">
-                <a href={`/${post.id.split('/').pop()}`} class="flex flex-col h-full p-8 justify-end relative">
-                   <img 
-                    src={post.data.image || "/assets/fallback.webp"} 
-                    alt={post.data.title}
-                    class="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-40 group-hover:opacity-60"
-                  />
-                  <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 to-transparent"></div>
-                  <div class="relative z-10 space-y-3">
-                    <span class="text-[9px] font-bold tracking-[0.4em] uppercase text-red-500/80">
-                      Top in {post.data.category}
-                    </span>
-                    <h3 class="text-lg md:text-xl font-bold tracking-tight text-white leading-snug uppercase line-clamp-3">
-                      {post.data.title}
-                    </h3>
-                  </div>
-                </a>
-              </section>
-            ))}
-            
-            {/* If only one secondary hero, fill with a navigational CTA or placeholder */}
-            {secondaryHeroes.length < 1 && (
-               <div class="flex-1 rounded-[2rem] border border-dashed border-neutral-900 flex items-center justify-center p-8 text-center">
-                  <p class="text-[10px] text-neutral-700 uppercase tracking-widest font-bold">Scanning for more top stories...</p>
-               </div>
-            )}
-          </div>
+              {/* Secondary Vertical Stack */}
+              <div class="lg:col-span-4 flex flex-col gap-4">
+                {combo.secondaryHeroes.map(post => (
+                  <section class="flex-1 group relative overflow-hidden rounded-[2rem] border border-neutral-800 bg-neutral-900/10 transition-all duration-500 hover:border-neutral-700 hover:bg-neutral-900/30 h-[290px]">
+                    <a href={`/${post.id.split('/').pop()}`} class="flex flex-col h-full p-8 justify-end relative">
+                       <img 
+                        src={post.data.image || "/assets/fallback.webp"} 
+                        alt={post.data.title}
+                        class="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-40 group-hover:opacity-60"
+                      />
+                      <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 to-transparent"></div>
+                      <div class="relative z-10 space-y-3">
+                        <span class="text-[9px] font-bold tracking-[0.4em] uppercase text-red-500/80">
+                          Top in {post.data.category}
+                        </span>
+                        <h3 class="text-lg md:text-xl font-bold tracking-tight text-white leading-snug uppercase line-clamp-3">
+                          {post.data.title}
+                        </h3>
+                      </div>
+                    </a>
+                  </section>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
+
+        <script is:inline>
+          (function() {
+            try {
+              let cycle = parseInt(sessionStorage.getItem('heroCycle') || '-1');
+              const totalCombos = document.querySelectorAll('.hero-set').length;
+              if (totalCombos > 0) {
+                cycle = (cycle + 1) % totalCombos;
+                sessionStorage.setItem('heroCycle', cycle);
+                const el = document.getElementById('hero-set-' + cycle);
+                if (el) {
+                  el.style.display = 'grid';
+                }
+              }
+            } catch(e) {
+              const first = document.querySelector('.hero-set');
+              if(first) first.style.display = 'grid';
+            }
+          })();
+        </script>
 
         {/* TIER 2: LATEST UPDATES (6 Items) */}
         <section class="space-y-10">
