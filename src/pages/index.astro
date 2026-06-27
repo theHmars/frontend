@@ -21,45 +21,17 @@ const postsByRegion = REGIONS.reduce((acc, region) => {
 }, {} as Record<string, number>);
 
 
-// TIER 1: Top Stories (Mosaic Cycling)
+// TIER 1: Top Stories (Static Hero)
 const hasRealImage = (p: CollectionEntry<"blog">) => p.data.image && !p.data.image.includes('fallback.webp');
-const topInternational = allPosts.filter(p => p.data.category === "International" && hasRealImage(p)).slice(0, 5);
-const topNational = allPosts.filter(p => p.data.category === "National" && hasRealImage(p)).slice(0, 5);
-const topLocal = allPosts.filter(p => p.data.category === "Local" && hasRealImage(p)).slice(0, 5);
+const topInternational = allPosts.filter(p => p.data.category === "International" && hasRealImage(p))[0];
+const topNational = allPosts.filter(p => p.data.category === "National" && hasRealImage(p))[0];
+const topLocal = allPosts.filter(p => p.data.category === "Local" && hasRealImage(p))[0];
 
-const heroCombos = [];
-const numCombos = Math.min(5, Math.max(topInternational.length, topNational.length, topLocal.length));
-
-for (let i = 0; i < numCombos; i++) {
-  const intPost = topInternational[i % topInternational.length];
-  const natPost = topNational[i % topNational.length];
-  const locPost = topLocal[i % topLocal.length];
-  
-  if (!intPost || !natPost || !locPost) continue;
-
-  let mainHero, sec1, sec2;
-  if (i % 3 === 0) {
-    mainHero = intPost; sec1 = natPost; sec2 = locPost;
-  } else if (i % 3 === 1) {
-    mainHero = natPost; sec1 = locPost; sec2 = intPost;
-  } else {
-    mainHero = locPost; sec1 = intPost; sec2 = natPost;
-  }
-  heroCombos.push({ mainHero, secondaryHeroes: [sec1, sec2] });
-}
-
-// Fallback if combos are empty
-if (heroCombos.length === 0) {
-  const fallbacks = allPosts.slice(0, 3);
-  heroCombos.push({ mainHero: fallbacks[0], secondaryHeroes: [fallbacks[1], fallbacks[2]].filter(Boolean) });
-}
+const mainHero = topLocal;
+const secondaryHeroes = [topNational, topInternational].filter(Boolean);
 
 // Exclude all used hero stories from subsequent tiers
-const heroIds = new Set();
-heroCombos.forEach(combo => {
-  if (combo.mainHero) heroIds.add(combo.mainHero.id);
-  combo.secondaryHeroes.forEach(p => p && heroIds.add(p.id));
-});
+const heroIds = new Set([mainHero, ...secondaryHeroes].filter(Boolean).map(p => p.id));
 const remainingPosts = allPosts.filter(p => !heroIds.has(p.id));
 
 // TIER 2: Grid (6)
@@ -96,92 +68,68 @@ const listPosts = remainingPosts.slice(6, 14);
           </div>
         </div>
 
-        <style>
-          .hero-set { display: none; }
-          :root[data-hero-cycle="0"] #hero-set-0 { display: grid; }
-          :root[data-hero-cycle="1"] #hero-set-1 { display: grid; }
-          :root[data-hero-cycle="2"] #hero-set-2 { display: grid; }
-          :root[data-hero-cycle="3"] #hero-set-3 { display: grid; }
-          :root[data-hero-cycle="4"] #hero-set-4 { display: grid; }
-          :root:not([data-hero-cycle]) #hero-set-0 { display: grid; }
-        </style>
-        <script is:inline define:vars={{ numCombos }}>
-          (function() {
-            try {
-              let cycle = parseInt(sessionStorage.getItem('heroCycle') || '-1');
-              if (numCombos > 0) {
-                cycle = (cycle + 1) % numCombos;
-                sessionStorage.setItem('heroCycle', cycle);
-                document.documentElement.setAttribute('data-hero-cycle', cycle.toString());
-              }
-            } catch(e) {}
-          })();
-        </script>
-
-        {/* TIER 1: HEADLINE MOSAIC (Cycling) */}
+        {/* TIER 1: HEADLINE MOSAIC (Static) */}
         <div id="hero-cycle-container" class="relative">
-          {heroCombos.map((combo, index) => (
-            <div id={`hero-set-${index}`} class="hero-set grid-cols-1 lg:grid-cols-12 gap-4 lg:h-[600px]">
-              {/* Main Large Hero */}
-              {combo.mainHero && (
-                <section class="lg:col-span-8 h-full group relative overflow-hidden rounded-[2rem] md:rounded-[2.5rem] border border-neutral-800 bg-neutral-900/10 shadow-3xl transition-all duration-700 hover:border-neutral-700 hover:bg-neutral-900/30">
-                  <a href={`/${combo.mainHero.id.split('/').pop()}`} class="flex flex-col h-full">
-                    <div class="relative flex-grow overflow-hidden bg-neutral-900">
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:h-[600px]">
+            {/* Main Large Hero */}
+            {mainHero && (
+              <section class="lg:col-span-8 h-full group relative overflow-hidden rounded-[2rem] md:rounded-[2.5rem] border border-neutral-800 bg-neutral-900/10 shadow-3xl transition-all duration-700 hover:border-neutral-700 hover:bg-neutral-900/30">
+                <a href={`/${mainHero.id.split('/').pop()}`} class="flex flex-col h-full">
+                  <div class="relative flex-grow overflow-hidden bg-neutral-900">
+                    <img 
+                      src={mainHero.data.image || "/assets/fallback.webp"} 
+                      alt={mainHero.data.title}
+                      class="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105 opacity-80 group-hover:opacity-100"
+                    />
+                    <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/20 to-transparent"></div>
+                    <div class="absolute top-8 left-8">
+                      <span class="rounded-full bg-white text-black px-6 py-2 text-[10px] font-bold tracking-[0.4em] uppercase shadow-2xl">
+                        Featured
+                      </span>
+                    </div>
+                    <div class="absolute bottom-10 left-10 right-10 space-y-4">
+                      <div class="flex items-center gap-5">
+                          <span class="text-[10px] font-bold tracking-[0.4em] uppercase text-red-500">
+                            {mainHero.data.category}
+                          </span>
+                          <span class="h-1 w-1 rounded-full bg-neutral-600"></span>
+                          <time class="text-[10px] font-medium tracking-[0.2em] text-neutral-400 uppercase">
+                            {mainHero.data.date.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
+                          </time>
+                      </div>
+                      <h2 class="text-3xl md:text-5xl font-bold tracking-tight text-white leading-tight uppercase">
+                        {mainHero.data.title}
+                      </h2>
+                    </div>
+                  </div>
+                </a>
+              </section>
+            )}
+
+            {/* Secondary Vertical Stack */}
+            <div class="lg:col-span-4 flex flex-col gap-4">
+              {secondaryHeroes.map(post => (
+                <section class="flex-1 group relative overflow-hidden rounded-[2rem] border border-neutral-800 bg-neutral-900/10 transition-all duration-500 hover:border-neutral-700 hover:bg-neutral-900/30 h-[290px]">
+                  <a href={`/${post.id.split('/').pop()}`} class="flex flex-col h-full p-8 justify-end relative">
                       <img 
-                        src={combo.mainHero.data.image || "/assets/fallback.webp"} 
-                        alt={combo.mainHero.data.title}
-                        class="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105 opacity-80 group-hover:opacity-100"
-                      />
-                      <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/20 to-transparent"></div>
-                      <div class="absolute top-8 left-8">
-                        <span class="rounded-full bg-white text-black px-6 py-2 text-[10px] font-bold tracking-[0.4em] uppercase shadow-2xl">
-                          Featured
-                        </span>
-                      </div>
-                      <div class="absolute bottom-10 left-10 right-10 space-y-4">
-                        <div class="flex items-center gap-5">
-                            <span class="text-[10px] font-bold tracking-[0.4em] uppercase text-red-500">
-                              {combo.mainHero.data.category}
-                            </span>
-                            <span class="h-1 w-1 rounded-full bg-neutral-600"></span>
-                            <time class="text-[10px] font-medium tracking-[0.2em] text-neutral-400 uppercase">
-                              {combo.mainHero.data.date.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
-                            </time>
-                        </div>
-                        <h2 class="text-3xl md:text-5xl font-bold tracking-tight text-white leading-tight uppercase">
-                          {combo.mainHero.data.title}
-                        </h2>
-                      </div>
+                      src={post.data.image || "/assets/fallback.webp"} 
+                      alt={post.data.title}
+                      class="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-40 group-hover:opacity-60"
+                    />
+                    <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 to-transparent"></div>
+                    <div class="relative z-10 space-y-3">
+                      <span class="text-[9px] font-bold tracking-[0.4em] uppercase text-red-500/80">
+                        Top in {post.data.category}
+                      </span>
+                      <h3 class="text-lg md:text-xl font-bold tracking-tight text-white leading-snug uppercase line-clamp-3">
+                        {post.data.title}
+                      </h3>
                     </div>
                   </a>
                 </section>
-              )}
-
-              {/* Secondary Vertical Stack */}
-              <div class="lg:col-span-4 flex flex-col gap-4">
-                {combo.secondaryHeroes.map(post => (
-                  <section class="flex-1 group relative overflow-hidden rounded-[2rem] border border-neutral-800 bg-neutral-900/10 transition-all duration-500 hover:border-neutral-700 hover:bg-neutral-900/30 h-[290px]">
-                    <a href={`/${post.id.split('/').pop()}`} class="flex flex-col h-full p-8 justify-end relative">
-                       <img 
-                        src={post.data.image || "/assets/fallback.webp"} 
-                        alt={post.data.title}
-                        class="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-40 group-hover:opacity-60"
-                      />
-                      <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 to-transparent"></div>
-                      <div class="relative z-10 space-y-3">
-                        <span class="text-[9px] font-bold tracking-[0.4em] uppercase text-red-500/80">
-                          Top in {post.data.category}
-                        </span>
-                        <h3 class="text-lg md:text-xl font-bold tracking-tight text-white leading-snug uppercase line-clamp-3">
-                          {post.data.title}
-                        </h3>
-                      </div>
-                    </a>
-                  </section>
-                ))}
-              </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
 
         {/* TIER 2: LATEST UPDATES (6 Items) */}
