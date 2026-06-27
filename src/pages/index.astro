@@ -7,7 +7,7 @@ import NewsListRow from "@components/NewsListRow.astro";
 import Ticker from "@components/Ticker.astro";
 import SidebarWidgets from "@components/SidebarWidgets.astro";
 import { HOME, REGIONS } from "@consts";
-import { shuffleArray } from "@lib/utils";
+// Removed shuffleArray
 
 const allPosts = (await getCollection("blog"))
   .filter((post) => !post.data.draft)
@@ -22,8 +22,8 @@ const postsByRegion = REGIONS.reduce((acc, region) => {
 
 
 // TIER 1: Top Stories (Mosaic Cycling)
-const hasRealImage = (p) => p.data.image && !p.data.image.includes('fallback.webp');
-const topInternational = allPosts.filter(p => (p.data.category === "International" || p.data.category === "Global") && hasRealImage(p)).slice(0, 5);
+const hasRealImage = (p: CollectionEntry<"blog">) => p.data.image && !p.data.image.includes('fallback.webp');
+const topInternational = allPosts.filter(p => p.data.category === "International" && hasRealImage(p)).slice(0, 5);
 const topNational = allPosts.filter(p => p.data.category === "National" && hasRealImage(p)).slice(0, 5);
 const topLocal = allPosts.filter(p => p.data.category === "Local" && hasRealImage(p)).slice(0, 5);
 
@@ -96,10 +96,32 @@ const listPosts = remainingPosts.slice(6, 14);
           </div>
         </div>
 
+        <style>
+          .hero-set { display: none; }
+          :root[data-hero-cycle="0"] #hero-set-0 { display: grid; }
+          :root[data-hero-cycle="1"] #hero-set-1 { display: grid; }
+          :root[data-hero-cycle="2"] #hero-set-2 { display: grid; }
+          :root[data-hero-cycle="3"] #hero-set-3 { display: grid; }
+          :root[data-hero-cycle="4"] #hero-set-4 { display: grid; }
+          :root:not([data-hero-cycle]) #hero-set-0 { display: grid; }
+        </style>
+        <script is:inline define:vars={{ numCombos }}>
+          (function() {
+            try {
+              let cycle = parseInt(sessionStorage.getItem('heroCycle') || '-1');
+              if (numCombos > 0) {
+                cycle = (cycle + 1) % numCombos;
+                sessionStorage.setItem('heroCycle', cycle);
+                document.documentElement.setAttribute('data-hero-cycle', cycle.toString());
+              }
+            } catch(e) {}
+          })();
+        </script>
+
         {/* TIER 1: HEADLINE MOSAIC (Cycling) */}
         <div id="hero-cycle-container" class="relative">
           {heroCombos.map((combo, index) => (
-            <div id={`hero-set-${index}`} class="hero-set grid grid-cols-1 lg:grid-cols-12 gap-4 lg:h-[600px]" style="display: none;">
+            <div id={`hero-set-${index}`} class="hero-set grid-cols-1 lg:grid-cols-12 gap-4 lg:h-[600px]">
               {/* Main Large Hero */}
               {combo.mainHero && (
                 <section class="lg:col-span-8 h-full group relative overflow-hidden rounded-[2rem] md:rounded-[2.5rem] border border-neutral-800 bg-neutral-900/10 shadow-3xl transition-all duration-700 hover:border-neutral-700 hover:bg-neutral-900/30">
@@ -161,26 +183,6 @@ const listPosts = remainingPosts.slice(6, 14);
             </div>
           ))}
         </div>
-
-        <script is:inline>
-          (function() {
-            try {
-              let cycle = parseInt(sessionStorage.getItem('heroCycle') || '-1');
-              const totalCombos = document.querySelectorAll('.hero-set').length;
-              if (totalCombos > 0) {
-                cycle = (cycle + 1) % totalCombos;
-                sessionStorage.setItem('heroCycle', cycle);
-                const el = document.getElementById('hero-set-' + cycle);
-                if (el) {
-                  el.style.display = 'grid';
-                }
-              }
-            } catch(e) {
-              const first = document.querySelector('.hero-set');
-              if(first) first.style.display = 'grid';
-            }
-          })();
-        </script>
 
         {/* TIER 2: LATEST UPDATES (6 Items) */}
         <section class="space-y-10">
