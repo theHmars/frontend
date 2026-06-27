@@ -1,0 +1,197 @@
+---
+import { type CollectionEntry, getCollection } from "astro:content";
+import BlogLayout from "@layouts/BlogLayout.astro";
+import Container from "@components/Container.astro";
+import FeedCard from "@components/FeedCard.astro";
+import NewsListRow from "@components/NewsListRow.astro";
+import Ticker from "@components/Ticker.astro";
+import SidebarWidgets from "@components/SidebarWidgets.astro";
+import { CATEGORY_INFO } from "@consts";
+
+export async function getStaticPaths() {
+  const allPosts = (await getCollection("blog"))
+    .filter((post) => !post.data.draft);
+    
+  const categories = [...new Set(allPosts.map((post) => post.data.category || "Reflections"))];
+  const getSlug = (name: string) => name.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
+
+  return categories.map((category) => ({
+    params: { category: getSlug(category) },
+    props: { categoryName: category },
+  }));
+}
+
+const { categoryName } = Astro.props;
+const categoryInfo = CATEGORY_INFO[categoryName] ?? {
+  slug: Astro.params.category,
+  summary: "Category Hub",
+  description: `Latest news and updates in ${categoryName}.`,
+};
+
+const allCategoryPosts = (await getCollection("blog"))
+  .filter((post) => !post.data.draft && (post.data.category || "Reflections") === categoryName)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+// TIER 1: Top in Category (Subject-specific hero logic)
+const topTopics = ["Politics", "Tech", "Business", "Sports", "Science", "Culture", "Health"];
+const heroStories = topTopics.map(topic => 
+  allCategoryPosts.find(p => p.data.majorTag === topic)
+).filter((p): p is CollectionEntry<"blog"> => !!p).slice(0, 3); // Take top 3 different subjects for the hero area
+
+const heroIds = new Set(heroStories.map(p => p.id));
+const remainingPosts = allCategoryPosts.filter(p => !heroIds.has(p.id));
+
+const mainHero = heroStories[0];
+const secondaryHeroes = heroStories.slice(1);
+
+// TIER 2: Grid (6)
+const gridPosts = remainingPosts.slice(0, 6);
+
+// TIER 3: Recent List
+const listPosts = remainingPosts.slice(6, 14);
+---
+
+<BlogLayout title={categoryName} description={categoryInfo.description}>
+  
+  <div class="bg-neutral-950/50 backdrop-blur-2xl border border-neutral-800 rounded-[2rem] md:rounded-[3rem] shadow-2xl overflow-hidden mt-0">
+    
+    <Ticker />
+
+    <Container>
+      <div class="pt-16 pb-12 space-y-12 md:space-y-20 animate show">
+
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-neutral-900 pb-10">
+          <div class="space-y-4">
+            <h1 class="text-4xl md:text-6xl font-bold tracking-tighter text-white uppercase">{categoryName}</h1>
+            <p class="text-neutral-500 text-xs md:text-sm tracking-[0.3em] uppercase font-light">
+              {categoryInfo.summary} • {allCategoryPosts.length} Reports
+            </p>
+          </div>
+          <div class="pb-2">
+            <a href={`/archives/${Astro.params.category}`} class="text-[10px] font-bold tracking-[0.3em] uppercase text-neutral-500 hover:text-white transition-colors border-b border-neutral-900 hover:border-white pb-1">
+                View {categoryName} Archive
+            </a>
+          </div>
+        </div>
+
+        {/* TIER 1: CATEGORY HEADLINE MOSAIC */}
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:h-[600px]">
+          {/* Main Large Hero */}
+          {mainHero && (
+            <section class="lg:col-span-8 h-full group relative overflow-hidden rounded-[2rem] md:rounded-[2.5rem] border border-neutral-800 bg-neutral-900/10 shadow-3xl transition-all duration-700 hover:border-neutral-700 hover:bg-neutral-900/30">
+              <a href={`/${mainHero.id.split('/').pop()}`} class="flex flex-col h-full">
+                <div class="relative flex-grow overflow-hidden bg-neutral-900">
+                  <img 
+                    src={mainHero.data.image || "/assets/fallback.webp"} 
+                    alt={mainHero.data.title}
+                    class="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105 opacity-80 group-hover:opacity-100"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/20 to-transparent"></div>
+                  <div class="absolute top-8 left-8">
+                    <span class="rounded-full bg-white text-black px-6 py-2 text-[10px] font-bold tracking-[0.4em] uppercase shadow-2xl">
+                      Top News
+                    </span>
+                  </div>
+                  <div class="absolute bottom-10 left-10 right-10 space-y-4">
+                    <div class="flex items-center gap-5">
+                        <span class="text-[10px] font-bold tracking-[0.4em] uppercase text-red-500">
+                          {mainHero.data.majorTag} Desk
+                        </span>
+                        <span class="h-1 w-1 rounded-full bg-neutral-600"></span>
+                        <time class="text-[10px] font-medium tracking-[0.2em] text-neutral-400 uppercase">
+                          {mainHero.data.date.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
+                        </time>
+                    </div>
+                    <h2 class="text-3xl md:text-5xl font-bold tracking-tight text-white leading-tight uppercase">
+                      {mainHero.data.title}
+                    </h2>
+                  </div>
+                </div>
+              </a>
+            </section>
+          )}
+
+          {/* Secondary Vertical Stack */}
+          <div class="lg:col-span-4 flex flex-col gap-4">
+            {secondaryHeroes.map(post => (
+              <section class="flex-1 group relative overflow-hidden rounded-[2rem] border border-neutral-800 bg-neutral-900/10 transition-all duration-500 hover:border-neutral-700 hover:bg-neutral-900/30 h-[290px]">
+                <a href={`/${post.id.split('/').pop()}`} class="flex flex-col h-full p-8 justify-end relative">
+                   <img 
+                    src={post.data.image || "/assets/fallback.webp"} 
+                    alt={post.data.title}
+                    class="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-40 group-hover:opacity-60"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 to-transparent"></div>
+                  <div class="relative z-10 space-y-3">
+                    <span class="text-[9px] font-bold tracking-[0.4em] uppercase text-red-500/80">
+                      Latest in {post.data.majorTag}
+                    </span>
+                    <h3 class="text-lg md:text-xl font-bold tracking-tight text-white leading-snug uppercase line-clamp-3">
+                      {post.data.title}
+                    </h3>
+                  </div>
+                </a>
+              </section>
+            ))}
+            
+            {/* Fallback if topics are empty */}
+            {secondaryHeroes.length === 0 && (
+               <div class="flex-1 rounded-[2rem] border border-neutral-900 bg-neutral-900/5 flex items-center justify-center p-8 text-center italic text-neutral-700 text-[10px] tracking-widest uppercase">
+                  More coverage loading...
+               </div>
+            )}
+          </div>
+        </div>
+
+        {/* TIER 2: CATEGORY GRID */}
+        {gridPosts.length > 0 && (
+          <section class="space-y-10">
+            <div class="flex items-center justify-between border-b border-neutral-900 pb-4">
+              <h2 class="text-[10px] font-bold tracking-[0.5em] uppercase text-neutral-500">Latest in {categoryName}</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {gridPosts.map((post) => (
+                <FeedCard
+                  href={`/${post.id.split('/').pop()}`}
+                  date={post.data.date.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })}
+                  title={post.data.title}
+                  description={post.data.description}
+                  image={post.data.image}
+                  category={post.data.category}
+                  region={post.data.region}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* TIER 3: LIST & SIDEBAR */}
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            <div class="lg:col-span-8 space-y-10">
+                <div class="flex items-center justify-between border-b border-neutral-900 pb-4">
+                    <h2 class="text-[10px] font-bold tracking-[0.5em] uppercase text-neutral-500">More Reports</h2>
+                </div>
+                <ul class="space-y-4">
+                    {listPosts.map((post) => (
+                        <NewsListRow 
+                            href={`/${post.id.split('/').pop()}`}
+                            date={post.data.date.toLocaleDateString("en-US", { month: "short", day: "2-digit" })}
+                            title={post.data.title}
+                            image={post.data.image}
+                            category={post.data.category}
+                        />
+                    ))}
+                </ul>
+            </div>
+
+            <aside class="lg:col-span-4 space-y-12">
+                
+                
+                <SidebarWidgets />
+            </aside>
+        </section>
+
+      </div>
+    </Container>
+  </div>
+</BlogLayout>

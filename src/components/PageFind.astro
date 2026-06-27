@@ -1,0 +1,143 @@
+---
+import Search from "astro-pagefind/components/Search.astro";
+
+const { pathname } = Astro.url;
+let typeFilter = "";
+if (pathname.startsWith("/archives")) typeFilter = "blog";
+else if (pathname.startsWith("/faq")) typeFilter = "faq";
+---
+
+<aside data-pagefind-ignore class="pointer-events-none">
+  <div
+    id="backdrop"
+    class="bg-black/80 hidden fixed inset-0 z-[200] flex justify-center p-6 backdrop-blur-md pointer-events-auto"
+  >
+    <div
+      id="pagefind-container"
+      class="m-0 flex min-h-[200px] max-h-[85vh] w-full max-w-2xl flex-col overflow-y-auto rounded-xl border border-white/10 bg-neutral-950 p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-200"
+    >
+      <div class="mb-4 flex items-center justify-between">
+        <div class="text-[10px] uppercase tracking-[0.4em] text-white font-medium">
+          {typeFilter ? `Search ${typeFilter}s` : 'Global Search'}
+        </div>
+        <button id="close-search" class="text-neutral-500 hover:text-white transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
+      </div>
+
+      <Search
+        instance="search"
+        className="pagefind-ui"
+        searchboxOptions={{
+          showImages: false,
+          excerptLength: 15,
+          resetStyles: false,
+        }}
+      />
+      
+      <div class="mt-6 flex items-center justify-between text-[9px] uppercase tracking-widest text-neutral-600">
+        <div>Type to start searching...</div>
+        <div>Press <kbd class="text-neutral-400">Esc</kbd> to exit</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<style is:global>
+  @reference "../styles/global.css";
+
+  :root {
+    --pagefind-ui-scale: 0.8;
+    --pagefind-ui-primary: #fff;
+    --pagefind-ui-text: #d4d4d4;
+    --pagefind-ui-background: transparent;
+    --pagefind-ui-border: #262626;
+    --pagefind-ui-font: "Geist", sans-serif;
+  }
+
+  .pagefind-ui .pagefind-ui__search-input {
+    @apply !bg-neutral-900 !border-neutral-800 !text-white !rounded-lg focus:!border-red-600/50 !transition-all !py-4;
+  }
+
+  .pagefind-ui .pagefind-ui__result-link {
+    @apply !text-white hover:!text-red-500 !transition-colors !font-bold !text-lg;
+  }
+
+  .pagefind-ui .pagefind-ui__result-excerpt {
+    @apply !text-neutral-400 !font-light !leading-relaxed !mt-2;
+  }
+
+  .pagefind-ui .pagefind-ui__message {
+    @apply !text-neutral-500 !text-xs !py-6 !font-mono !tracking-widest;
+  }
+
+  .pagefind-ui .pagefind-ui__results {
+    @apply !border-none;
+  }
+
+  .pagefind-ui .pagefind-ui__result {
+    @apply !border-b !border-neutral-900 !py-6;
+  }
+  
+  .pagefind-ui .pagefind-ui__drawer {
+    @apply !mt-4;
+  }
+</style>
+
+<script is:inline define:vars={{ typeFilter }}>
+  function setupPagefind() {
+    const searchBtns = [
+      document.getElementById("magnifying-glass-desktop"),
+      document.getElementById("magnifying-glass-mobile")
+    ];
+    const backdrop = document.getElementById("backdrop");
+    const closeBtn = document.getElementById("close-search");
+    const container = document.getElementById("pagefind-container");
+
+    function openPagefind() {
+      backdrop?.classList.remove("hidden");
+      backdrop?.classList.add("flex");
+      
+      const searchInput = document.querySelector(".pagefind-ui__search-input");
+      setTimeout(() => searchInput?.focus(), 50);
+    }
+
+    function closePagefind() {
+      backdrop?.classList.remove("flex");
+      backdrop?.classList.add("hidden");
+      const searchInput = document.querySelector(".pagefind-ui__search-input");
+      if (searchInput) {
+        searchInput.value = "";
+        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    }
+
+    searchBtns.forEach(btn => {
+      if (btn) btn.addEventListener("click", openPagefind);
+    });
+    
+    closeBtn?.addEventListener("click", closePagefind);
+    
+    backdrop?.addEventListener("click", (e) => {
+      if (!container?.contains(e.target)) closePagefind();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closePagefind();
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        openPagefind();
+      }
+    });
+
+    // Auto-close on result click
+    document.addEventListener("click", (e) => {
+      if (e.target.closest(".pagefind-ui__result-link")) {
+        closePagefind();
+      }
+    });
+  }
+
+  document.addEventListener('astro:page-load', setupPagefind);
+  setupPagefind();
+</script>

@@ -1,0 +1,90 @@
+---
+type Props = {
+  href: string;
+  date: string;
+  title: string;
+  description?: string;
+  image?: string;
+  category?: string;
+  region?: string;
+  badges?: { label: string; tone?: "muted" | "solid" | "accent" }[];
+};
+
+const { href, date, title, description, image, category, region, badges = [] } = Astro.props;
+
+// Fallback image for news feed
+const displayImage = image || "/assets/fallback.webp";
+
+const toneClasses: Record<string, string> = {
+  muted: "border-neutral-900 text-neutral-500",
+  solid: "border-neutral-800 bg-neutral-900 text-white",
+  accent: "border-neutral-800/80 text-red-400/70",
+};
+---
+
+<li class="group list-none">
+  <a
+    href={href}
+    class="flex flex-col gap-4 rounded-3xl border border-neutral-900/50 bg-neutral-950/20 p-4 transition-all duration-500 hover:border-neutral-800 hover:bg-neutral-900/40 hover:shadow-2xl"
+  >
+    {/* Image Container */}
+    <div class="relative aspect-[16/10] overflow-hidden rounded-2xl bg-neutral-900">
+      {image ? (
+        <img
+          src={image}
+          alt={title}
+          loading="lazy"
+          decoding="async"
+          class="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 group-hover:opacity-90 grayscale-[0.2] group-hover:grayscale-0"
+        />
+      ) : (
+        <div class="h-full w-full flex items-center justify-center bg-neutral-950/80 text-neutral-800 group-hover:text-neutral-600 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+            <line x1="4" x2="4" y1="22" y2="15"/>
+          </svg>
+        </div>
+      )}
+      {category && (
+        <div class="absolute bottom-3 left-3 flex gap-2">
+          <span class="rounded-lg bg-black/60 backdrop-blur-md border border-white/10 px-3 py-1 text-[9px] font-bold tracking-[0.2em] uppercase text-white shadow-xl">
+            {category}
+          </span>
+          {region && (
+            <span class="rounded-lg bg-red-600/80 backdrop-blur-md border border-red-400/30 px-3 py-1 text-[9px] font-bold tracking-[0.2em] uppercase text-white shadow-xl">
+              {region}
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+
+    {/* Content */}
+    <div class="flex flex-col gap-2 px-1">
+      <div class="flex items-center justify-between gap-4">
+        <time class="text-[9px] font-medium tracking-[0.3em] text-neutral-600 uppercase">
+          {date}
+        </time>
+        {badges.length > 0 && (
+          <div class="flex items-center gap-1.5">
+            {badges.slice(0, 1).map((badge) => (
+              <span class={`rounded-full border px-2 py-0.5 text-[8px] font-light tracking-[0.15em] uppercase ${toneClasses[badge.tone || "muted"]}`}>
+                {badge.label}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <h2 class="line-clamp-2 text-lg font-semibold tracking-tight text-neutral-200 transition-colors duration-300 group-hover:text-white md:text-xl leading-tight">
+        {title}
+      </h2>
+
+      {description && (
+        <p class="line-clamp-2 text-xs font-light leading-relaxed text-neutral-500">
+          {description}
+        </p>
+      )}
+    </div>
+  </a>
+</li>

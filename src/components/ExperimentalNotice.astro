@@ -1,0 +1,101 @@
+---
+---
+<div id="experimental-notice-wrapper" class="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-[200] flex flex-col items-end pointer-events-none">
+  
+  {/* Popup Panel */}
+  <div id="experimental-popup" class="w-[calc(100vw-3rem)] sm:w-96 bg-neutral-950/95 backdrop-blur-xl border border-red-900/50 p-8 rounded-3xl shadow-2xl mb-4 origin-bottom-right transition-all duration-500 opacity-0 scale-95 pointer-events-none flex flex-col gap-6">
+    
+    {/* Header */}
+    <div class="flex items-start justify-between">
+        <div class="flex items-center gap-4">
+            <div class="h-10 w-10 rounded-full bg-red-900/30 flex items-center justify-center text-red-700">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v7.31"/><path d="M14 9.3V2"/><path d="M8.5 2h7"/><path d="M14 9.3a6.5 6.5 0 1 1-4 0"/><line x1="5.52" x2="18.48" y1="16" y2="16"/></svg>
+            </div>
+            <h3 class="text-xs font-bold tracking-[0.2em] uppercase text-red-700">Experimental Hub</h3>
+        </div>
+        <button id="close-experimental-popup" class="text-neutral-500 hover:text-white transition-colors p-2 -mr-2 -mt-2 pointer-events-auto" aria-label="Close Notice">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+    </div>
+
+    {/* Content */}
+    <div class="space-y-5 text-neutral-400 text-xs leading-relaxed font-light">
+        <p class="text-sm">
+            Welcome to <strong class="font-sans tracking-tighter uppercase text-white">thehmars</strong>. 
+            <br />
+            This is an experimental, automated portal. Just a heads up:
+        </p>
+        <ul class="list-disc pl-5 space-y-2 text-neutral-400 marker:text-red-900/50">
+            <li><strong>Raw Feeds:</strong> Content is scraped and posted by scripts, so there's no manual editing or fact-checking.</li>
+            <li><strong>Desktop First:</strong> The website is optimized for desktop only. Mobile and tablet devices may experience layout issues or unexpected behavior.</li>
+            <li><strong>Work in Progress:</strong> The donation and newsletter systems have been temporarily paused while we upgrade our internal systems.</li>
+        </ul>
+        
+        <p class="text-xs text-neutral-500 border-l-2 border-neutral-800 pl-4 py-2 mt-4 bg-neutral-900/20 rounded-r-xl">
+            Spot a bug, want to contribute, or interested in getting a portal setup like this built for yourself? I'd love to chat—reach out via the <a href="/contact" class="text-white underline decoration-neutral-700 hover:text-red-500 transition-colors pointer-events-auto">contact form</a>!
+        </p>
+    </div>
+
+    {/* Actions */}
+    <div class="pt-4 border-t border-neutral-900/50">
+        <button 
+            id="close-experimental-popup-main" 
+            class="w-full py-4 rounded-xl border border-neutral-800 bg-neutral-900/50 hover:bg-white hover:text-black hover:border-white transition-all text-[10px] font-bold tracking-[0.3em] uppercase text-neutral-400 pointer-events-auto"
+        >
+            Dismiss Notice
+        </button>
+    </div>
+
+  </div>
+
+  {/* Floating Button */}
+  <button id="experimental-trigger" class="h-14 w-14 rounded-full bg-neutral-950 border border-red-900/80 shadow-[0_0_15px_rgba(127,29,29,0.4)] text-red-700 hover:bg-red-900 hover:text-white hover:shadow-[0_0_25px_rgba(127,29,29,0.6)] flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 pointer-events-auto" aria-label="Show Experimental Notice">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v7.31"/><path d="M14 9.3V2"/><path d="M8.5 2h7"/><path d="M14 9.3a6.5 6.5 0 1 1-4 0"/><line x1="5.52" x2="18.48" y1="16" y2="16"/></svg>
+  </button>
+
+</div>
+
+<script is:inline>
+  function initExperimentalNotice() {
+    const popup = document.getElementById('experimental-popup');
+    const trigger = document.getElementById('experimental-trigger');
+    const closeBtn = document.getElementById('close-experimental-popup');
+    const closeBtnMain = document.getElementById('close-experimental-popup-main');
+    
+    if (!popup || !trigger || !closeBtn || !closeBtnMain) return;
+
+    if (trigger.dataset.initialized) return;
+    trigger.dataset.initialized = "true";
+
+    const isDismissed = localStorage.getItem('thehmars_experimental_notice_dismissed');
+
+    const openPopup = () => {
+        popup.classList.remove('opacity-0', 'scale-95', 'pointer-events-none');
+        popup.classList.add('opacity-100', 'scale-100', 'pointer-events-auto');
+    };
+
+    const closePopup = () => {
+        popup.classList.remove('opacity-100', 'scale-100', 'pointer-events-auto');
+        popup.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
+        localStorage.setItem('thehmars_experimental_notice_dismissed', 'true');
+    };
+
+    if (!isDismissed) {
+        setTimeout(openPopup, 1000);
+    }
+
+    trigger.addEventListener('click', () => {
+        if (popup.classList.contains('opacity-0')) {
+            openPopup();
+        } else {
+            closePopup();
+        }
+    });
+
+    closeBtn.addEventListener('click', closePopup);
+    closeBtnMain.addEventListener('click', closePopup);
+  }
+
+  document.addEventListener('astro:page-load', initExperimentalNotice);
+  initExperimentalNotice();
+</script>

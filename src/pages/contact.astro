@@ -1,0 +1,168 @@
+---
+import BlogLayout from "@layouts/BlogLayout.astro";
+import Container from "@components/Container.astro";
+import PageHeader from "@components/PageHeader.astro";
+
+const TITLE = "Contact";
+const DESCRIPTION = "Contact the thehmars editorial desk for inquiries, news tips, or sponsorship opportunities.";
+---
+
+<BlogLayout title={TITLE} description={DESCRIPTION}>
+  <div class="bg-neutral-950/50 backdrop-blur-2xl border border-neutral-800 rounded-[2rem] md:rounded-[3rem] shadow-2xl overflow-hidden min-h-[60vh]">
+    <Container>
+      <div class="pt-24 pb-20 space-y-20 animate">
+        
+        <PageHeader
+          title="Contact Desk"
+          subtitle="Editorial Inquiries"
+          breadcrumbs={[
+            { label: "Home", href: "/" },
+            { label: "Contact" }
+          ]}
+        />
+
+        <div class="max-w-2xl mx-auto space-y-12">
+          <div class="prose prose-neutral prose-invert">
+            <p class="text-neutral-400 font-light leading-relaxed tracking-wide">
+              Have a news tip, a correction, or a sponsorship inquiry? Reach our editorial desk below.
+            </p>
+          </div>
+
+          {/* Integrated Success Message (Triggered by data-fs-success) */}
+          <div data-fs-success class="hidden flex-col items-center justify-center p-12 text-center space-y-6 rounded-[2rem] bg-white shadow-2xl animate">
+            <div class="h-20 w-20 rounded-full border border-red-600/20 flex items-center justify-center bg-red-600/10 text-red-600">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            </div>
+            <div class="space-y-2">
+              <h2 class="text-2xl font-bold uppercase tracking-[0.2em] text-black">Transmission Success</h2>
+              <p class="text-neutral-600 text-[10px] font-bold tracking-[0.3em] uppercase leading-relaxed max-w-xs mx-auto">
+                Your message has been received. Our editorial desk will review it shortly.
+              </p>
+            </div>
+            <div class="pt-4">
+                <a href="/" class="text-[10px] font-bold tracking-[0.2em] uppercase text-red-600 border-b border-red-200 hover:border-red-600 pb-1 transition-colors">Return to Hub</a>
+            </div>
+          </div>
+
+          {/* Error Message (Inline for correction) */}
+          <div data-fs-error class="hidden p-6 rounded-2xl border border-red-500/20 bg-red-500/5 text-red-400 font-light tracking-wide text-sm animate">
+            Error: Submission failure. Please verify your connection and try again.
+          </div>
+
+          <form id="contact-form" class="space-y-8 pb-12">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="space-y-2">
+                <label for="name" class="text-[10px] uppercase tracking-[0.2em] text-neutral-500 font-bold">Identity / Name</label>
+                <input 
+                  type="text" 
+                  name="name" 
+                  id="name" 
+                  required 
+                  data-fs-field
+                  placeholder="NAME OR ORGANIZATION"
+                  class="w-full bg-neutral-900 border border-neutral-800 rounded-sm px-4 py-3 text-sm text-white focus:outline-none focus:border-red-600/50 transition-all font-light"
+                />
+                <span data-fs-error="name" class="text-[9px] text-red-400 tracking-wider"></span>
+              </div>
+              <div class="space-y-2">
+                <label for="email" class="text-[10px] uppercase tracking-[0.2em] text-neutral-500 font-bold">Electronic Mail</label>
+                <input 
+                  type="email" 
+                  name="email" 
+                  id="email" 
+                  required 
+                  data-fs-field
+                  placeholder="EMAIL@DOMAIN.COM"
+                  class="w-full bg-neutral-900 border border-neutral-800 rounded-sm px-4 py-3 text-sm text-white focus:outline-none focus:border-red-600/50 transition-all font-light"
+                />
+                <span data-fs-error="email" class="text-[9px] text-red-400 tracking-wider"></span>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label for="subject" class="text-[10px] uppercase tracking-[0.2em] text-neutral-500 font-bold">Inquiry Classification</label>
+              <select 
+                name="subject" 
+                id="subject"
+                data-fs-field
+                class="w-full bg-neutral-900 border border-neutral-800 rounded-sm px-4 py-3 text-sm text-white focus:outline-none focus:border-red-600/50 transition-all font-light appearance-none"
+              >
+                <option value="News Tip">News Tip / Breaking Report</option>
+                <option value="Editorial Feedback">Editorial Feedback / Correction</option>
+                <option value="Sponsorship">Sponsorship & Partnership</option>
+                <option value="Technical Issue">Portal Technical Issue</option>
+                <option value="Other">Other General Inquiry</option>
+              </select>
+            </div>
+
+            <div class="space-y-2">
+              <label for="message" class="text-[10px] uppercase tracking-[0.2em] text-neutral-500 font-bold">Detailed Communication</label>
+              <textarea 
+                name="message" 
+                id="message" 
+                rows="6" 
+                required 
+                data-fs-field
+                placeholder="MESSAGE CONTENT..."
+                class="w-full bg-neutral-900 border border-neutral-800 rounded-sm px-4 py-3 text-sm text-white focus:outline-none focus:border-red-600/50 transition-all font-light resize-none"
+              ></textarea>
+              <span data-fs-error="message" class="text-[9px] text-red-400 tracking-wider"></span>
+            </div>
+
+            <button 
+              type="submit" 
+              data-fs-submit-btn
+              class="w-full md:w-auto md:px-12 h-12 bg-white text-black rounded-sm text-[10px] font-bold tracking-[0.3em] hover:bg-red-600 hover:text-white active:scale-[0.98] transition-all duration-300 uppercase disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Transmit Message
+            </button>
+          </form>
+        </div>
+
+      </div>
+    </Container>
+  </div>
+</BlogLayout>
+
+<script is:inline>
+  window.formspree = window.formspree || function () { (formspree.q = formspree.q || []).push(arguments); };
+  formspree('initForm', { formElement: '#contact-form', formId: 'xwvjwvkq' });
+
+  // Auto-hide success message after 5 seconds
+  document.addEventListener('DOMContentLoaded', () => {
+    const successBox = document.querySelector('[data-fs-success]');
+    const contactForm = document.getElementById('contact-form');
+    
+    if (successBox && contactForm) {
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.attributeName === 'class') {
+            if (!successBox.classList.contains('hidden')) {
+              setTimeout(() => {
+                successBox.classList.add('hidden');
+                contactForm.reset();
+              }, 5000);
+            }
+          }
+        });
+      });
+      observer.observe(successBox, { attributes: true });
+    }
+  });
+</script>
+<script is:inline src="https://unpkg.com/@formspree/ajax@1" defer></script>
+
+<style>
+  /* Custom styles for Formspree success/error states */
+  [data-fs-success]:not(.hidden) {
+    display: flex !important;
+  }
+  [data-fs-error]:not(.hidden) {
+    display: block !important;
+  }
+
+  /* Hide form on success */
+  [data-fs-success]:not(.hidden) ~ #contact-form {
+    display: none !important;
+  }
+</style>

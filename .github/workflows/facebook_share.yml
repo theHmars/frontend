@@ -1,0 +1,47 @@
+name: Facebook Scheduled Auto-Share
+ 
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/content/news/**'
+
+concurrency:
+  group: "facebook-publisher"
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  schedule-shares:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      with:
+        ref: main
+        fetch-depth: 2 # Fetch the last 2 commits so we can diff and find added files
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+
+    - name: Schedule Facebook Posts
+      env:
+        FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+        FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+        RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        RENDER_SERVICE_ID: ${{ secrets.RENDER_SERVICE_ID }}
+        RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+      run: |
+        # Get files changed between the current commit and its parent
+        git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | python scripts/facebook_publisher.py

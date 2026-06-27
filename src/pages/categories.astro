@@ -1,0 +1,153 @@
+---
+import { getCollection } from "astro:content";
+import BlogLayout from "@layouts/BlogLayout.astro";
+import Container from "@components/Container.astro";
+import { CATEGORY_INFO } from "@consts";
+
+const posts = await getCollection("blog", ({ data }) => !data.draft);
+
+// Get unique categories and their counts
+const categoriesMap = posts.reduce((acc, post) => {
+  const cat = post.data.category || "Reflections";
+  acc[cat] = (acc[cat] || 0) + 1;
+  return acc;
+}, {} as Record<string, number>);
+
+const categories = Object.keys(categoriesMap).sort();
+
+const getCategorySlug = (name: string) => CATEGORY_INFO[name]?.slug ?? name.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
+---
+
+<BlogLayout title="Sections" description="Explore news by geographic scope and vertical">
+  <div class="bg-neutral-950/50 backdrop-blur-2xl border border-neutral-800 rounded-[2rem] md:rounded-[3rem] shadow-2xl overflow-hidden mt-0">
+    <Container>
+      <div class="pt-24 pb-20 space-y-24 animate show">
+      
+      {/* Page Header */}
+      <div class="flex flex-col md:items-center text-left md:text-center gap-6 border-b border-neutral-900 pb-12 max-w-3xl mx-auto">
+        <h1 class="text-4xl md:text-6xl font-bold tracking-tighter text-white uppercase">Section Index</h1>
+        <p class="text-neutral-400 text-sm md:text-base font-light leading-relaxed">
+          Navigate our reporting by geographic scope. From the immediate impact of local events in the Northeast to the shifting tides of international geopolitics.
+        </p>
+        <div class="pt-4">
+            <span class="inline-block border border-neutral-800 rounded-full px-4 py-1.5 text-[10px] tracking-[0.3em] uppercase text-neutral-500 font-bold">
+                {categories.length + 1} Global Desks
+            </span>
+        </div>
+      </div>
+
+      {/* Categories Grid */}
+      <section class="space-y-10">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {categories.map((category) => (
+            <a
+              href={`/${getCategorySlug(category)}`}
+              class="group relative flex flex-col justify-between h-full min-h-[300px] rounded-[2.5rem] border border-neutral-900 bg-neutral-950/40 p-10 md:p-12 transition-all duration-500 hover:border-neutral-700 hover:bg-neutral-900 overflow-hidden"
+            >
+              <div class="absolute -right-20 -bottom-20 text-neutral-800/10 transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-12 group-hover:text-red-900/5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 12h3v8h14v-8h3L12 2z"/></svg>
+              </div>
+
+              <div class="relative z-10 space-y-6">
+                <div class="flex justify-between items-start">
+                    <div class="space-y-2">
+                        <p class="text-[10px] font-bold tracking-[0.4em] uppercase text-red-500">
+                            {CATEGORY_INFO[category]?.summary || "Editorial Desk"}
+                        </p>
+                        <h2 class="text-3xl md:text-5xl font-bold tracking-tighter text-white group-hover:text-white transition-colors uppercase">
+                            {category}
+                        </h2>
+                    </div>
+                    <div class="flex flex-col items-end">
+                        <span class="text-2xl md:text-3xl font-light tracking-tighter text-neutral-800 group-hover:text-neutral-600 transition-colors">
+                            {categoriesMap[category].toString().padStart(2, '0')}
+                        </span>
+                        <p class="text-[8px] tracking-[0.2em] uppercase text-neutral-700">Reports</p>
+                    </div>
+                </div>
+                <p class="text-sm md:text-lg font-light leading-relaxed text-neutral-500 group-hover:text-neutral-400 transition-colors max-w-md">
+                    {CATEGORY_INFO[category]?.description ?? "A dedicated section for specific reportage and curated insights."}
+                </p>
+              </div>
+              
+              <div class="relative z-10 mt-12 pt-8 border-t border-neutral-900 flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                     <span class="text-[10px] font-bold tracking-[0.3em] uppercase text-neutral-500 group-hover:text-white transition-colors">
+                        Enter Desk
+                    </span>
+                    <span class="h-1 w-1 rounded-full bg-neutral-800 group-hover:bg-red-500 transition-colors"></span>
+                    <span class="text-[9px] font-medium tracking-[0.2em] text-neutral-700 uppercase">
+                        {getCategorySlug(category)}/
+                    </span>
+                </div>
+                <span class="text-neutral-600 group-hover:text-white transition-transform group-hover:translate-x-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                </span>
+              </div>
+            </a>
+          ))}
+
+          {/* MANUAL EDITORIAL CARD */}
+          <a
+            href="/editorial"
+            class="group relative flex flex-col justify-between h-full min-h-[300px] rounded-[2.5rem] border border-neutral-900 bg-neutral-950/40 p-10 md:p-12 transition-all duration-500 hover:border-neutral-700 hover:bg-neutral-900 overflow-hidden"
+          >
+            <div class="absolute -right-20 -bottom-20 text-neutral-800/10 transition-transform duration-700 group-hover:scale-110 group-hover:-rotate-12 group-hover:text-red-900/5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 24 24" fill="currentColor"><path d="M4 22h14a2 2 0 0 0 2-2V7.5L14.5 2H6a2 2 0 0 0-2 2v4"/></svg>
+            </div>
+
+            <div class="relative z-10 space-y-6">
+              <div class="flex justify-between items-start">
+                  <div class="space-y-2">
+                      <p class="text-[10px] font-bold tracking-[0.4em] uppercase text-red-500">
+                          Long-form Analysis
+                      </p>
+                      <h2 class="text-3xl md:text-5xl font-bold tracking-tighter text-white group-hover:text-white transition-colors uppercase">
+                          Editorial
+                      </h2>
+                  </div>
+              </div>
+              <p class="text-sm md:text-lg font-light leading-relaxed text-neutral-500 group-hover:text-neutral-400 transition-colors max-w-md">
+                  Deep dives, opinion pieces, and investigative curation by the BatchNode editor.
+              </p>
+            </div>
+            
+            <div class="relative z-10 mt-12 pt-8 border-t border-neutral-900 flex items-center justify-between">
+              <div class="flex items-center gap-4">
+                   <span class="text-[10px] font-bold tracking-[0.3em] uppercase text-neutral-500 group-hover:text-white transition-colors">
+                      Enter Desk
+                  </span>
+                  <span class="h-1 w-1 rounded-full bg-neutral-800 group-hover:bg-red-500 transition-colors"></span>
+                  <span class="text-[9px] font-medium tracking-[0.2em] text-neutral-700 uppercase">
+                      editorial/
+                  </span>
+              </div>
+              <span class="text-neutral-600 group-hover:text-white transition-transform group-hover:translate-x-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </span>
+            </div>
+          </a>
+
+        </div>
+      </section>
+
+      {/* Discovery Prompt */}
+      <section class="rounded-[3rem] border border-dashed border-neutral-800 bg-neutral-900/10 p-12 md:p-20 text-center space-y-8">
+         <h2 class="text-2xl md:text-3xl font-bold tracking-tight text-white uppercase">Looking for something specific?</h2>
+         <p class="text-neutral-500 text-sm md:text-base font-light leading-relaxed max-w-xl mx-auto">
+            If you are researching a particular subject matter rather than a region, explore our Topic Directory to find cross-scope reporting on Tech, Politics, and more.
+         </p>
+         <div class="flex flex-col sm:flex-row items-center justify-center gap-6 pt-4">
+            <a href="/topics" class="inline-flex items-center justify-center h-14 px-10 bg-white text-black rounded-xl text-[10px] font-bold tracking-[0.2em] uppercase transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]">
+                Browse Topic Directory
+            </a>
+            <a href="/archives" class="text-[10px] font-bold tracking-[0.3em] uppercase text-neutral-500 hover:text-white transition-colors border-b border-neutral-900 hover:border-white pb-1">
+                View Full Archive
+            </a>
+         </div>
+      </section>
+
+    </div>
+  </Container>
+</div>
+</BlogLayout>

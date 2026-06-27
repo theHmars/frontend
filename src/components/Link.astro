@@ -1,0 +1,34 @@
+---
+import { cn } from "@lib/utils";
+
+type Props = {
+  href: string;
+  external?: boolean;
+  underline?: boolean;
+  group?: boolean;
+  class?: string;
+};
+
+const {
+  href,
+  external,
+  underline = true,
+  group = false,
+  class: className,
+  ...rest
+} = Astro.props;
+---
+
+<a
+  href={href}
+  target={external ? "_blank" : "_self"}
+  class={cn(
+    "inline-block decoration-neutral-800 hover:decoration-neutral-400 focus-visible:decoration-neutral-400 text-current hover:text-white transition-colors duration-300 ease-in-out",
+    underline && "underline underline-offset-[3px]",
+    group && "group",
+    className
+  )}
+  {...rest}
+>
+  <slot />
+</a>

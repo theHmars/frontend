@@ -1,0 +1,105 @@
+---
+import { SOCIALS } from "@consts";
+import { getIcon } from "@lib/utils";
+import BackToTop from "@components/BackToTop.astro";
+---
+
+<footer class="w-full pb-10 relative z-20 animate">
+  <div class="max-w-none ml-0 px-5 md:px-16 lg:px-24 xl:px-32">
+    <div class="relative">
+      <div class="absolute -top-16 right-0">
+        <BackToTop />
+      </div>
+    </div>
+    
+    <div>
+      {/* Aesthetic Top Row: Link to internal directory */}
+      <div class="flex flex-wrap items-center justify-start gap-6 text-neutral-500 border-b border-neutral-900/50 py-6">
+        {SOCIALS.map(social => (
+          <a 
+            href={social.HREF} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            class="hover:text-white transition-colors" 
+            title={social.NAME} 
+            aria-label={social.NAME} 
+            set:html={getIcon(social.NAME)} 
+          />
+        ))}
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-8 py-14 border-b border-neutral-900/50">
+        
+        {/* Branding Column */}
+        <div class="space-y-4 md:col-span-4 lg:col-span-5 pr-8">
+          <h2 class="text-white text-sm font-medium tracking-[0.3em] uppercase">the<span class="text-red-600">hmars</span></h2>
+          <p class="text-neutral-500 text-[10px] tracking-widest leading-relaxed max-w-sm">
+            The independent news and culture hub. Curating regional and global reporting for a comprehensive, unfiltered view of our world.
+          </p>
+        </div>
+
+        {/* Navigation Columns */}
+        <div class="md:col-span-8 lg:col-span-7 grid grid-cols-2 sm:grid-cols-4 gap-8">
+          
+          <div class="space-y-6">
+            <h2 class="text-white text-[10px] font-bold tracking-[0.3em] uppercase border-b border-neutral-900 pb-2 inline-block">News Desks</h2>
+            <nav class="flex flex-col gap-4 text-[10px] tracking-[0.2em] uppercase font-medium">
+              <a href="/international" class="text-neutral-500 hover:text-white transition-colors w-max">International</a>
+              <a href="/national" class="text-neutral-500 hover:text-white transition-colors w-max">National</a>
+              <a href="/local" class="text-neutral-500 hover:text-white transition-colors w-max">Local</a>
+              <a href="/editorial" class="text-neutral-500 hover:text-white transition-colors w-max">Editorial</a>
+            </nav>
+          </div>
+
+          <div class="space-y-6">
+            <h2 class="text-white text-[10px] font-bold tracking-[0.3em] uppercase border-b border-neutral-900 pb-2 inline-block">Discovery</h2>
+            <nav class="flex flex-col gap-4 text-[10px] tracking-[0.2em] uppercase font-medium">
+              <a href="/topics" class="text-neutral-500 hover:text-white transition-colors w-max">Topic Directory</a>
+              <a href="/categories" class="text-neutral-500 hover:text-white transition-colors w-max">Section Index</a>
+              <a href="/archives" class="text-neutral-500 hover:text-white transition-colors w-max">Full Archive</a>
+            </nav>
+          </div>
+
+          <div class="space-y-6">
+            <h2 class="text-white text-[10px] font-bold tracking-[0.3em] uppercase border-b border-neutral-900 pb-2 inline-block">Portal</h2>
+            <nav class="flex flex-col gap-4 text-[10px] tracking-[0.2em] uppercase font-medium">
+              <a href="/" class="text-neutral-500 hover:text-white transition-colors w-max">Home</a>
+              <a href="/about" class="text-neutral-500 hover:text-white transition-colors w-max">About</a>
+              <a href="/socials" class="text-neutral-500 hover:text-white transition-colors w-max">Socials</a>
+              <a href="/changelog" class="text-neutral-500 hover:text-white transition-colors w-max">Changelog</a>
+            </nav>
+          </div>
+
+          <div class="space-y-6">
+            <h2 class="text-white text-[10px] font-bold tracking-[0.3em] uppercase border-b border-neutral-900 pb-2 inline-block">Support</h2>
+            <nav class="flex flex-col gap-4 text-[10px] tracking-[0.2em] uppercase font-medium">
+              <a href="/contact" class="text-neutral-500 hover:text-white transition-colors w-max">Contact</a>
+            </nav>
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* Bottom Copyright Row */}
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between py-10 gap-8 md:pr-1">
+        <div class="flex flex-col md:flex-row items-center gap-4 md:gap-8 text-center md:text-left">
+          <p class="text-neutral-700 text-[9px] tracking-[0.4em] uppercase">
+            © {new Date().getFullYear()} the<span class="text-red-900/50">hmars</span>
+          </p>
+          <span class="hidden md:block h-3 w-px bg-neutral-900"></span>
+          <p class="text-red-900 text-[8px] tracking-[0.3em] uppercase font-bold flex items-center gap-2">
+            <span class="relative flex h-1.5 w-1.5">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-700"></span>
+            </span>
+            Automated News Desk Active
+          </p>
+        </div>
+        <p class="text-neutral-800 text-[9px] tracking-[0.3em] lowercase">
+          batchnode.onrender.com
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>

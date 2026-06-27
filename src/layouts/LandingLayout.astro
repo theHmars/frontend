@@ -1,0 +1,55 @@
+---
+import PageFind from "@components/PageFind.astro";
+import Head from "@components/Head.astro";
+import ExperimentalNotice from "@components/ExperimentalNotice.astro";
+import { SITE } from "@consts";
+
+type Props = {
+  title: string;
+  description: string;
+  image?: string;
+};
+
+const { title, description, image } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <Head title={`${title} | ${SITE.TITLE}`} description={description} image={image} />
+  </head>
+  <body class="selection:bg-neutral-800 selection:text-white bg-black">
+    <div class="fixed inset-0 z-0 bg-[radial-gradient(circle_at_50%_50%,#0a0a0a,black)]"></div>
+    <div id="landing-wrapper" class="w-full relative z-10">
+      <slot />
+    </div>
+    <PageFind />
+
+    <script>
+      import Lenis from 'lenis';
+
+      // Initialize Lenis
+      const lenis = new Lenis({
+        duration: 1.2,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        orientation: 'vertical',
+        gestureOrientation: 'vertical',
+        smoothWheel: true,
+        wheelMultiplier: 1,
+        touchMultiplier: 2,
+        infinite: false,
+      });
+
+      function raf(time: number) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+      }
+
+      requestAnimationFrame(raf);
+
+      // Make lenis accessible globally if needed for other scripts
+      (window as any).lenis = lenis;
+    </script>
+    <ExperimentalNotice />
+  </body>
+</html>

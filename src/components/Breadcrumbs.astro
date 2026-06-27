@@ -1,0 +1,30 @@
+---
+const { items = [] } = Astro.props;
+---
+
+<nav class="flex items-center gap-2 text-[10px] md:text-xs tracking-[0.2em] uppercase font-medium text-neutral-500 overflow-x-auto no-scrollbar whitespace-nowrap py-1">
+  <a href="/archives" class="hover:text-white transition-colors">Journal</a>
+  
+  {items.map((item: any) => (
+    <div class="flex items-center gap-2">
+      <span class="text-neutral-800 select-none">/</span>
+      {item.href ? (
+        <a href={item.href} class="hover:text-white transition-colors truncate max-w-[150px]">
+          {item.label}
+        </a>
+      ) : (
+        <span class="text-white truncate max-w-[200px]">{item.label}</span>
+      )}
+    </div>
+  ))}
+</nav>
+
+<style>
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+</style>

@@ -1,0 +1,51 @@
+---
+import { type CollectionEntry } from "astro:content";
+
+type Props = {
+  scope: string;
+  posts: CollectionEntry<"blog">[];
+  description: string;
+};
+
+const { scope, posts, description } = Astro.props;
+const scopeSlug = scope.toLowerCase();
+---
+
+<div class="rounded-3xl border border-neutral-800 bg-neutral-900/10 p-8 flex flex-col gap-6 group hover:border-neutral-700 transition-all duration-500 hover:bg-neutral-900/20 shadow-xl">
+  <div class="space-y-1">
+    <div class="flex items-center justify-between">
+       <h3 class="text-xl font-bold tracking-tight text-white uppercase">{scope}</h3>
+       <a href={`/${scopeSlug}`} class="text-[9px] font-bold tracking-[0.2em] uppercase text-red-600 hover:text-white transition-colors">
+         Explore All
+       </a>
+    </div>
+    <p class="text-[10px] font-light leading-relaxed text-neutral-600 uppercase tracking-widest">
+      {description}
+    </p>
+  </div>
+
+  <div class="h-[1px] w-full bg-neutral-900/50"></div>
+
+  <ul class="space-y-6">
+    {posts.length > 0 ? posts.map((post) => (
+      <li class="group/item">
+        <a href={`/${post.id.split('/').pop()}`} class="block space-y-2">
+          <div class="flex items-center gap-2">
+             <span class="text-[8px] font-bold tracking-[0.2em] uppercase text-neutral-700 group-hover/item:text-red-500 transition-colors">
+               {post.data.majorTag}
+             </span>
+             <span class="h-0.5 w-0.5 rounded-full bg-neutral-800"></span>
+             <time class="text-[8px] font-medium text-neutral-800 uppercase tracking-tighter">
+                {post.data.date.toLocaleDateString("en-US", { month: 'short', day: 'numeric' })}
+             </time>
+          </div>
+          <h4 class="text-sm font-medium tracking-tight text-neutral-400 group-hover/item:text-white transition-colors line-clamp-2 leading-snug">
+            {post.data.title}
+          </h4>
+        </a>
+      </li>
+    )) : (
+        <p class="text-[10px] font-light italic text-neutral-800 uppercase tracking-widest py-4">No recent reports</p>
+    )}
+  </ul>
+</div>

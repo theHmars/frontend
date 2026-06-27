@@ -1,0 +1,345 @@
+---
+import { type CollectionEntry, getCollection, render } from "astro:content";
+import BlogLayout from "@layouts/BlogLayout.astro";
+import Container from "@components/Container.astro";
+import FormattedDate from "@components/FormattedDate.astro";
+import { readingTime } from "@lib/utils";
+
+import ShareButtons from "@components/ShareButtons.astro";
+import NewsListRow from "@components/NewsListRow.astro";
+import SidebarWidgets from "@components/SidebarWidgets.astro";
+import { normalizeTag, shuffleArray } from "@lib/utils";
+
+export async function getStaticPaths() {
+  const posts = (await getCollection("blog"))
+    .filter((post) => !post.data.draft)
+    .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+  
+  const getCategorySlug = (name: string) => name.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-");
+
+  return posts.map((post) => {
+    const cleanId = post.id.split('/').pop() || post.id;
+    return {
+      params: { 
+        category: getCategorySlug(post.data.category || "Reflections"),
+        id: cleanId 
+      },
+      props: post,
+    };
+  });
+}
+type Props = CollectionEntry<"blog">;
+
+const posts = (await getCollection("blog"))
+  .filter((post) => !post.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+// Helper to get slug from category name
+const getCategorySlug = (name: string) => name.toLowerCase().replace(/ & /g, "-").replace(/ /g, "-");
+
+const post = Astro.props;
+const { Content, headings } = await render(post);
+
+// Redaction Check
+const isRestricted = post.data.redacted || post.data.private;
+
+const category = post.data.category || "Reflections";
+const postUrl = new URL(Astro.url.pathname, Astro.site).toString();
+
+// Related Posts logic (Category based)
+const categoryRelated = posts
+  .filter((p) => p.id !== post.id && (p.data.category || "Reflections") === category);
+
+let relatedPosts = categoryRelated.slice(0, 8);
+
+if (relatedPosts.length < 8) {
+  const otherPosts = shuffleArray(posts.filter(p => 
+    p.id !== post.id && 
+    !categoryRelated.some(cr => cr.id === p.id)
+  ));
+  relatedPosts = [...relatedPosts, ...otherPosts].slice(0, 8);
+}
+
+// Topic Related Posts (Sidebar)
+const tagRelated = posts
+  .filter((p) => p.id !== post.id && p.data.majorTag === post.data.majorTag);
+
+let topicRelated = tagRelated.slice(0, 3);
+
+if (topicRelated.length < 3) {
+  const otherPosts = shuffleArray(posts.filter(p => 
+    p.id !== post.id && 
+    !tagRelated.some(tr => tr.id === p.id)
+  ));
+  topicRelated = [...topicRelated, ...otherPosts].slice(0, 3);
+}
+
+// Image logic
+const heroImage = post.data.image || "/assets/fallback.webp";
+
+---
+
+<BlogLayout 
+  title={post.data.title} 
+  description={post.data.description} 
+  image={post.data.image}
+  ogType="article"
+  article={{
+    title: post.data.title,
+    description: post.data.description,
+    image: post.data.image,
+    date: post.data.date,
+    category: post.data.category,
+    region: post.data.region
+  }}
+>
+  
+  <div class="animate show pb-20">
+    
+    {/* MAIN CONTENT CARD */}
+    <div class="bg-neutral-950/50 backdrop-blur-2xl border border-neutral-800 rounded-[2rem] md:rounded-[3rem] shadow-2xl overflow-hidden min-h-[60vh]">
+        
+        {/* TOP HERO IMAGE (Full Bleed in Card) */}
+        {!isRestricted && (
+            <div class="relative w-full aspect-[21/9] md:aspect-[25/9] overflow-hidden border-b border-neutral-900 group">
+                <img 
+                    src={heroImage} 
+                    alt={post.data.title}
+                    class="h-full w-full object-cover opacity-60 transition-transform duration-1000 group-hover:scale-105"
+                />
+                <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/20 to-transparent"></div>
+                
+                {/* Float Category Overlay */}
+                <div class="absolute bottom-8 left-8 md:left-12 flex items-center gap-4">
+                    <span class="bg-red-600 text-white text-[9px] font-bold tracking-[0.3em] uppercase px-4 py-1.5 rounded-full shadow-2xl">
+                        {category}
+                    </span>
+                    <ShareButtons title={post.data.title} url={postUrl} minimal={true} />
+                </div>
+                
+                {/* Float AI Badge Overlay on Right Edge */}
+                {post.data.isAgentGenerated && !post.data.isVerified && (
+                  <div class="absolute bottom-8 right-8 md:right-12">
+                    <span class="bg-red-950/80 border border-red-800/40 text-red-500 text-[9px] font-bold tracking-[0.3em] uppercase px-4 py-1.5 rounded-full shadow-2xl" title="AI-Generated and Unverified Report">
+                      AI REPORT
+                    </span>
+                  </div>
+                )}
+            </div>
+        )}
+
+        <Container>
+          <div class="py-16 md:py-24 space-y-16">
+            
+            {/* ARTICLE HEADER */}
+            <header class="space-y-10 max-w-4xl">
+              <div class="space-y-4">
+                  <div class="flex items-center gap-2 text-[10px] text-neutral-500 tracking-[0.3em] uppercase font-bold">
+                    <FormattedDate date={post.data.date} />
+                    <span class="text-neutral-800">•</span>
+                    {post.body && <span>{readingTime(post.body)}</span>}
+                  </div>
+                  
+                  <h1 class="text-2xl md:text-4xl lg:text-6xl font-sans font-bold tracking-tight uppercase text-white leading-[1.1] text-balance">
+                    {post.data.title}
+                  </h1>
+              </div>
+
+              <div class="flex flex-col md:flex-row md:items-center gap-6 justify-between border-y border-neutral-900/50 py-8">
+                  <div class="flex items-center gap-4">
+                      <div class="h-10 w-10 rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center text-red-500 font-bold text-xs">BN</div>
+                      <div>
+                          <p class="text-[10px] tracking-[0.2em] uppercase text-neutral-500 font-medium">Curated By</p>
+                          <p class="text-xs tracking-wider text-white font-bold uppercase">BatchNode Editorial Desk</p>
+                      </div>
+                  </div>
+                  
+                  {post.data.tags && (
+                    <div class="flex flex-wrap gap-3">
+                      {post.data.tags.map(tag => (
+                        <a href={`/topics/${normalizeTag(tag)}`} class="px-3 py-1 rounded-md border border-neutral-900 text-[9px] text-neutral-500 hover:text-white hover:border-neutral-700 tracking-[0.1em] uppercase transition-colors">#${tag}</a>
+                      ))}
+                    </div>
+                  )}
+              </div>
+            </header>
+
+            {/* CONTENT AREA */}
+            <div class="w-full fluid-editorial-area relative">
+              {isRestricted ? (
+                <div class="py-20 flex flex-col items-center justify-center text-center space-y-10 animate">
+                  <div class="h-20 w-20 rounded-full border border-neutral-800 flex items-center justify-center bg-neutral-900/50">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-neutral-600"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  </div>
+                  <div class="space-y-4 max-w-lg">
+                    <h2 class="text-xl font-bold uppercase tracking-[0.3em] text-white">
+                      {post.data.redacted ? "Content Redacted" : "Entry Set to Private"}
+                    </h2>
+                    <p class="text-sm text-neutral-500 font-light leading-relaxed tracking-wide italic">
+                      The contents of this entry have been temporarily or permanently removed from public view for editorial, legal, or personal reasons.
+                    </p>
+                  </div>
+                  <div class="pt-10">
+                     <a href="/archives" class="inline-block border border-neutral-800 text-neutral-400 px-10 py-3 text-[10px] uppercase tracking-[0.3em] hover:bg-white hover:text-black hover:border-white transition-all rounded-sm">
+                        Return to Archives
+                     </a>
+                  </div>
+                </div>
+              ) : (
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-16">
+                  {/* MAIN TEXT */}
+                  <div class="lg:col-span-8">
+                    <article class="content-body prose prose-neutral prose-invert max-w-none first-letter:text-7xl first-letter:font-bold first-letter:text-white first-letter:mr-2 first-letter:float-left first-letter:leading-none first-letter:-mt-0.5" data-pagefind-filter="type:blog">
+                        {Content && <Content />}
+                    </article>
+                  </div>
+
+                  {/* STICKY SIDEBAR */}
+                  <aside class="hidden lg:block lg:col-span-4">
+                    <div class="sticky top-32 space-y-12">
+                        
+                        {/* AI-Generated Disclaimer Card */}
+                        {post.data.isAgentGenerated && !post.data.isVerified && (
+                            <div class="p-6 rounded-[2rem] border border-red-950/40 bg-red-950/5 space-y-3 relative overflow-hidden group">
+                                <div class="absolute -right-4 -top-4 text-red-900/10 group-hover:text-red-900/15 transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                </div>
+                                <div class="relative z-10 space-y-2">
+                                    <p class="text-[9px] font-bold tracking-[0.3em] uppercase text-red-500">AI-Generated Report</p>
+                                    <p class="text-[11px] text-neutral-400 font-light leading-relaxed">
+                                        This article was automatically compiled by an AI agent and has not been manually verified for factual accuracy. Readers are advised to verify details with primary sources.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+                        
+                        {/* 1. Regional Desk Card */}
+                        <div class="p-8 rounded-[2rem] border border-neutral-800 bg-neutral-900/20 space-y-6 overflow-hidden relative group">
+                            <div class="absolute -right-6 -top-6 text-neutral-800/10 group-hover:text-red-900/5 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 12h3v8h14v-8h3L12 2z"/></svg>
+                            </div>
+                            <div class="relative z-10 space-y-4">
+                                <p class="text-[10px] font-bold tracking-[0.4em] uppercase text-red-500">Source Desk</p>
+                                <div class="space-y-1">
+                                    <h3 class="text-xl font-bold text-white uppercase tracking-tight">
+                                        {(post.data.region && post.data.region !== "N/A") ? post.data.region : category} Hub
+                                    </h3>
+                                    <p class="text-[10px] text-neutral-500 uppercase tracking-widest font-medium">
+                                        {category} • {post.data.majorTag || "General"}
+                                    </p>
+                                </div>
+                                <div class="pt-4">
+                                    <a 
+                                        href={post.data.region && post.data.region !== "N/A" ? `/local/${normalizeTag(post.data.region).replace(/ /g, '-')}` : `/${getCategorySlug(category)}`}
+                                        class="inline-flex items-center gap-2 text-[9px] font-bold tracking-[0.2em] uppercase text-white border-b border-neutral-800 hover:border-white transition-all pb-1"
+                                    >
+                                        Visit Desk <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 2. Table of Contents (If Article is long enough) */}
+                        {headings.length > 2 && (
+                            <div class="space-y-6">
+                                <div class="flex items-center gap-4">
+                                    <h2 class="text-[10px] font-bold tracking-[0.4em] uppercase text-neutral-600">Outline</h2>
+                                    <div class="h-px flex-1 bg-neutral-900"></div>
+                                </div>
+                                <nav class="space-y-3">
+                                    {headings.filter(h => h.depth <= 3).map(h => (
+                                        <a href={`#${h.slug}`} class="block text-[11px] text-neutral-500 hover:text-white uppercase tracking-widest transition-colors leading-relaxed">
+                                            {h.text}
+                                        </a>
+                                    ))}
+                                </nav>
+                            </div>
+                        )}
+
+                        {/* 3. Topic Match */}
+                        {topicRelated.length > 0 && (
+                            <div class="space-y-6">
+                                <div class="flex items-center gap-4">
+                                    <h2 class="text-[10px] font-bold tracking-[0.4em] uppercase text-neutral-600">More in {post.data.majorTag}</h2>
+                                    <div class="h-px flex-1 bg-neutral-900"></div>
+                                </div>
+                                <div class="grid grid-cols-1 gap-5">
+                                    {topicRelated.map(p => (
+                                        <a href={`/${p.id}`} class="group block space-y-2">
+                                            <h4 class="text-[11px] font-bold text-neutral-400 group-hover:text-white leading-snug line-clamp-2 transition-colors uppercase tracking-tight">
+                                                {p.data.title}
+                                            </h4>
+                                            <div class="flex items-center gap-3">
+                                                <time class="text-[8px] font-medium text-neutral-800 uppercase tracking-widest">
+                                                    {p.data.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                                                </time>
+                                                <span class="text-[8px] text-red-900 group-hover:text-red-600 transition-colors">→</span>
+                                            </div>
+                                        </a>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 4. Quick Actions */}
+                        <div class="space-y-6 pt-6 border-t border-neutral-900">
+                             <div class="flex flex-col gap-4">
+                                <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="flex items-center gap-3 text-[9px] font-bold tracking-[0.3em] uppercase text-neutral-600 hover:text-white transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+                                    Top of Report
+                                </button>
+                                <a href="/archives" class="flex items-center gap-3 text-[9px] font-bold tracking-[0.3em] uppercase text-neutral-600 hover:text-white transition-colors">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 7h6"/><path d="M8 11h8"/></svg>
+                                    Chronology
+                                </a>
+                             </div>
+                        </div>
+
+                    </div>
+                  </aside>
+                </div>
+              )}
+            </div>
+
+            {/* SECTION: RELATED REPORTS & SIDEBAR */}
+            <section class="border-t border-neutral-900 pt-24 space-y-16">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                    <div class="lg:col-span-8 space-y-10">
+                        <div class="flex items-center justify-between border-b border-neutral-900 pb-4">
+                            <h2 class="text-[10px] font-bold tracking-[0.5em] uppercase text-neutral-500">Related Coverage</h2>
+                        </div>
+                        <ul class="space-y-4">
+                            {relatedPosts.map((p) => (
+                                <NewsListRow 
+                                    href={`/${p.id}`}
+                                    date={p.data.date.toLocaleDateString("en-US", { month: "short", day: "2-digit" })}
+                                    title={p.data.title}
+                                    image={p.data.image}
+                                    category={p.data.category || 'Reflections'}
+                                />
+                            ))}
+                        </ul>
+                    </div>
+
+                    <aside class="lg:col-span-4 space-y-12">
+                        <SidebarWidgets />
+                    </aside>
+                </div>
+            </section>
+          </div>
+        </Container>
+    </div>
+  </div>
+</BlogLayout>
+
+<style is:global>
+  .fluid-editorial-area { color: #d4d4d4; }
+  .content-body p, .content-body h1, .content-body h2, .content-body h3, .content-body ul, .content-body ol, .content-body blockquote, .content-body pre { max-width: 100%; }
+  .content-body h2 { font-size: 1.5rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #fff; margin-top: 4rem; margin-bottom: 1.5rem; }
+  .content-body h3 { font-size: 1.1rem; font-weight: 600; color: #e5e5e5; margin-top: 3rem; }
+  .content-body a { color: #ffffff; text-decoration: underline; text-underline-offset: 4px; text-decoration-color: #262626; transition: all 0.3s ease; }
+  .content-body a:hover { text-decoration-color: #ffffff; }
+  .content-body blockquote { border-left: 2px solid #ef4444; padding-left: 2rem; font-style: italic; color: #a3a3a3; font-size: 1.25rem; line-height: 1.6; margin: 4rem 0; }
+  .content-body img { width: 100%; height: auto; border-radius: 2rem; border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); margin: 4rem 0 !important; }
+  .content-body figcaption { margin-top: -3rem; margin-bottom: 4rem; font-size: 0.75rem; color: #737373; text-transform: uppercase; letter-spacing: 0.15em; font-weight: 300; text-align: center; }
+</style>

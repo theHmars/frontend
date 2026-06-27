@@ -1,0 +1,49 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Container from "@components/Container.astro";
+---
+
+<Layout title="Supporters" description="Page under construction.">
+  <Container>
+    <div class="pt-24 pb-20 space-y-24 animate min-h-[60vh] flex flex-col items-center justify-center text-center">
+      
+      <div class="h-20 w-20 rounded-full border border-neutral-800 flex items-center justify-center bg-neutral-900/50 mb-8">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-neutral-600">
+          <path d="m14.7 13.5 5.3 5.3"/>
+          <path d="M17 19h4v-4"/>
+          <path d="M4 15 15 4"/>
+          <path d="m4 15 4-4"/>
+          <path d="m4 15-3 3"/>
+          <path d="M7 11l4-4"/>
+        </svg>
+      </div>
+
+      <div class="space-y-4 max-w-lg">
+        <h1 class="text-2xl md:text-3xl font-bold uppercase tracking-[0.3em] text-white">
+          Under Construction
+        </h1>
+        <p class="text-sm text-neutral-500 font-light leading-relaxed tracking-wide italic">
+          The Supporters Wall is currently being renovated. While we still record all contributions, public recognition is temporarily paused.
+        </p>
+      </div>
+
+      <div class="pt-10 flex gap-6">
+         <a href="/" class="inline-block border border-neutral-800 text-neutral-400 px-10 py-3 text-[10px] uppercase tracking-[0.3em] hover:bg-white hover:text-black hover:border-white transition-all rounded-sm">
+            Return Home
+         </a>
+      </div>
+
+    </div>
+  </Container>
+</Layout>
+
+<style>
+  .animate {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: reveal 1s ease-out forwards;
+  }
+  @keyframes reveal {
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>

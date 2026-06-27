@@ -1,0 +1,228 @@
+---
+import { type CollectionEntry, getCollection } from "astro:content";
+import BlogLayout from "@layouts/BlogLayout.astro";
+import Container from "@components/Container.astro";
+import FeedCard from "@components/FeedCard.astro";
+import NewsListRow from "@components/NewsListRow.astro";
+import Ticker from "@components/Ticker.astro";
+import SidebarWidgets from "@components/SidebarWidgets.astro";
+import { HOME, REGIONS } from "@consts";
+import { shuffleArray } from "@lib/utils";
+
+const allPosts = (await getCollection("blog"))
+  .filter((post) => !post.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+
+// REGIONAL COUNTS
+const postsByRegion = REGIONS.reduce((acc, region) => {
+  acc[region] = allPosts.filter(p => p.data.category === "Local" && p.data.region === region).length;
+  return acc;
+}, {} as Record<string, number>);
+
+
+// TIER 1: Top Stories (Mosaic)
+const featuredPost = allPosts.find(p => p.data.featured);
+const topInternational = allPosts.filter(p => p.id !== featuredPost?.id).find(p => p.data.category === "International");
+const topNational = allPosts.filter(p => p.id !== featuredPost?.id && p.id !== topInternational?.id).find(p => p.data.category === "National");
+const topLocal = allPosts.filter(p => p.id !== featuredPost?.id && p.id !== topInternational?.id && p.id !== topNational?.id).find(p => p.data.category === "Local");
+
+let heroStories = [featuredPost, topInternational, topNational, topLocal].filter((p): p is CollectionEntry<"blog"> => !!p).slice(0, 3);
+
+// Fallback to random if not enough hero stories
+if (heroStories.length < 3) {
+  const heroIds = new Set(heroStories.map(p => p.id));
+  const otherPosts = shuffleArray(allPosts.filter(p => !heroIds.has(p.id)));
+  heroStories = [...heroStories, ...otherPosts].slice(0, 3);
+}
+
+const mainHero = heroStories[0];
+const secondaryHeroes = heroStories.slice(1);
+
+// Exclude hero stories from subsequent tiers
+const heroIds = new Set(heroStories.map(p => p.id));
+const remainingPosts = allPosts.filter(p => !heroIds.has(p.id));
+
+// TIER 2: Grid (6)
+const gridPosts = remainingPosts.slice(0, 6);
+
+// TIER 3: Recent List (Balanced to match sidebar height)
+const listPosts = remainingPosts.slice(6, 14);
+---
+
+<BlogLayout title={HOME.TITLE} description={HOME.DESCRIPTION}>
+  
+  <div class="bg-neutral-950/50 backdrop-blur-2xl border border-neutral-800 rounded-[2rem] md:rounded-[3rem] shadow-2xl overflow-hidden mt-0">
+    
+    <Ticker />
+
+    <Container>
+      <div class="pt-8 md:pt-16 pb-12 space-y-12 md:space-y-20 animate show">
+
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-neutral-900 pb-8 md:pb-10">
+          <div class="space-y-4">
+            <div class="flex items-center gap-4">
+                <h1 class="text-4xl md:text-6xl font-bold tracking-tighter text-white uppercase">the<span class="text-red-600">hmars</span></h1>
+                <div class="flex items-center gap-2 bg-red-950/30 border border-red-900/50 px-3 py-1 rounded-full mb-1">
+                    <span class="relative flex h-1.5 w-1.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-600 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-700"></span>
+                    </span>
+                    <span class="text-[8px] font-bold tracking-[0.3em] uppercase text-red-500">Live</span>
+                </div>
+            </div>
+            <p class="text-neutral-500 text-xs md:text-sm tracking-[0.3em] uppercase font-light">
+              Independent Global News • {new Date().toLocaleDateString("en-US", { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+            </p>
+          </div>
+        </div>
+
+        {/* TIER 1: HEADLINE MOSAIC */}
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:h-[600px]">
+          {/* Main Large Hero */}
+          {mainHero && (
+            <section class="lg:col-span-8 h-full group relative overflow-hidden rounded-[2rem] md:rounded-[2.5rem] border border-neutral-800 bg-neutral-900/10 shadow-3xl transition-all duration-700 hover:border-neutral-700 hover:bg-neutral-900/30">
+              <a href={`/${mainHero.id.split('/').pop()}`} class="flex flex-col h-full">
+                <div class="relative flex-grow overflow-hidden bg-neutral-900">
+                  <img 
+                    src={mainHero.data.image || "/assets/fallback.webp"} 
+                    alt={mainHero.data.title}
+                    class="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105 opacity-80 group-hover:opacity-100"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/20 to-transparent"></div>
+                  <div class="absolute top-8 left-8">
+                    <span class="rounded-full bg-white text-black px-6 py-2 text-[10px] font-bold tracking-[0.4em] uppercase shadow-2xl">
+                      Featured
+                    </span>
+                  </div>
+                  <div class="absolute bottom-10 left-10 right-10 space-y-4">
+                    <div class="flex items-center gap-5">
+                        <span class="text-[10px] font-bold tracking-[0.4em] uppercase text-red-500">
+                          {mainHero.data.category}
+                        </span>
+                        <span class="h-1 w-1 rounded-full bg-neutral-600"></span>
+                        <time class="text-[10px] font-medium tracking-[0.2em] text-neutral-400 uppercase">
+                          {mainHero.data.date.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
+                        </time>
+                    </div>
+                    <h2 class="text-3xl md:text-5xl font-bold tracking-tight text-white leading-tight uppercase">
+                      {mainHero.data.title}
+                    </h2>
+                  </div>
+                </div>
+              </a>
+            </section>
+          )}
+
+          {/* Secondary Vertical Stack */}
+          <div class="lg:col-span-4 flex flex-col gap-4">
+            {secondaryHeroes.map(post => (
+              <section class="flex-1 group relative overflow-hidden rounded-[2rem] border border-neutral-800 bg-neutral-900/10 transition-all duration-500 hover:border-neutral-700 hover:bg-neutral-900/30 h-[290px]">
+                <a href={`/${post.id.split('/').pop()}`} class="flex flex-col h-full p-8 justify-end relative">
+                   <img 
+                    src={post.data.image || "/assets/fallback.webp"} 
+                    alt={post.data.title}
+                    class="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-40 group-hover:opacity-60"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 to-transparent"></div>
+                  <div class="relative z-10 space-y-3">
+                    <span class="text-[9px] font-bold tracking-[0.4em] uppercase text-red-500/80">
+                      Top in {post.data.category}
+                    </span>
+                    <h3 class="text-lg md:text-xl font-bold tracking-tight text-white leading-snug uppercase line-clamp-3">
+                      {post.data.title}
+                    </h3>
+                  </div>
+                </a>
+              </section>
+            ))}
+            
+            {/* If only one secondary hero, fill with a navigational CTA or placeholder */}
+            {secondaryHeroes.length < 1 && (
+               <div class="flex-1 rounded-[2rem] border border-dashed border-neutral-900 flex items-center justify-center p-8 text-center">
+                  <p class="text-[10px] text-neutral-700 uppercase tracking-widest font-bold">Scanning for more top stories...</p>
+               </div>
+            )}
+          </div>
+        </div>
+
+        {/* TIER 2: LATEST UPDATES (6 Items) */}
+        <section class="space-y-10">
+          <div class="flex items-center justify-between border-b border-neutral-900 pb-4">
+            <h2 class="text-[10px] font-bold tracking-[0.5em] uppercase text-neutral-500">Latest Updates</h2>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {gridPosts.map((post) => (
+              <FeedCard
+                href={`/${post.id.split('/').pop()}`}
+                date={post.data.date.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })}
+                title={post.data.title}
+                description={post.data.description}
+                image={post.data.image}
+                category={post.data.category}
+                region={post.data.region}
+                badges={[
+                  ...(post.data.language === "mizo" ? [{ label: "Miz", tone: "muted" as const }] : []),
+                  ...(post.data.language === "hmar" ? [{ label: "Hmar", tone: "accent" as const }] : []),
+                ]}
+              />
+            ))}
+          </div>
+        </section>
+
+        {/* REGIONAL DESKS (Quick Shortcuts) */}
+        <section class="space-y-6">
+            <div class="flex items-center gap-4">
+                <h2 class="text-[10px] font-bold tracking-[0.4em] uppercase text-neutral-500">Choose your Desk</h2>
+                <div class="h-px flex-1 bg-neutral-900"></div>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2">
+                {REGIONS.map(region => (
+                    <a 
+                        href={`/local/${region.toLowerCase().replace(/ /g, '-')}`} 
+                        class="group flex items-center justify-between px-4 py-3 rounded-xl border border-neutral-900 bg-neutral-950/20 hover:border-neutral-700 hover:bg-neutral-900 transition-all duration-300"
+                    >
+                        <span class="text-[9px] font-bold tracking-widest text-neutral-500 group-hover:text-white transition-colors uppercase truncate mr-2">{region}</span>
+                        <span class="text-[8px] font-mono text-neutral-800 group-hover:text-red-500 transition-colors">
+                            {postsByRegion[region].toString().padStart(2, '0')}
+                        </span>
+                    </a>
+                ))}
+            </div>
+        </section>
+
+        {/* TIER 3: RECENT REPORTS (List) */}
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            <div class="lg:col-span-8 space-y-10">
+                <div class="flex items-center justify-between border-b border-neutral-900 pb-4">
+                    <h2 class="text-[10px] font-bold tracking-[0.5em] uppercase text-neutral-500">Recent Reports</h2>
+                </div>
+                <ul class="space-y-4">
+                    {listPosts.map((post) => (
+                        <NewsListRow 
+                            href={`/${post.id.split('/').pop()}`}
+                            date={post.data.date.toLocaleDateString("en-US", { month: "short", day: "2-digit" })}
+                            title={post.data.title}
+                            image={post.data.image}
+                            category={post.data.category}
+                        />
+                    ))}
+                </ul>
+                <div class="pt-8 flex">
+                    <a href="/archives" class="text-[10px] font-bold tracking-[0.3em] uppercase text-neutral-400 hover:text-white transition-colors flex items-center gap-3">
+                        View Full News Archive <span>→</span>
+                    </a>
+                </div>
+            </div>
+
+            {/* Sidebar / Static Callouts */}
+            <aside class="lg:col-span-4 space-y-12">
+                <SidebarWidgets />
+            </aside>
+        </section>
+
+      </div>
+    </Container>
+  </div>
+</BlogLayout>

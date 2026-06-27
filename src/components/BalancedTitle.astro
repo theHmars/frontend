@@ -1,0 +1,83 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<div class:list={["balanced-text-container", className]}>
+  <slot />
+</div>
+
+<script>
+  import { prepareWithSegments, walkLineRanges } from '@chenglou/pretext';
+
+  function balanceText() {
+    const elements = document.querySelectorAll('.balanced-text-container');
+    
+    elements.forEach((el) => {
+      const element = el as HTMLElement;
+      const text = element.innerText;
+      const style = window.getComputedStyle(element);
+      const font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+      const containerWidth = element.parentElement?.clientWidth || element.clientWidth;
+
+      if (!text || containerWidth === 0) return;
+
+      const prepared = prepareWithSegments(text, font);
+      
+      let bestWidth = containerWidth;
+      let minDifference = Infinity;
+
+      // Initial line count at full width
+      let initialLines: number[] = [];
+      walkLineRanges(prepared, containerWidth, (line) => initialLines.push(line.width));
+      const initialLineCount = initialLines.length;
+
+      if (initialLineCount <= 1) return;
+
+      // We want to find a width that keeps the same line count (or slightly more)
+      // but balances the widths better.
+      for (let w = containerWidth; w > containerWidth * 0.4; w -= 2) {
+        let lineWidths: number[] = [];
+        walkLineRanges(prepared, w, (line) => {
+          lineWidths.push(line.width);
+        });
+
+        if (lineWidths.length < initialLineCount) continue;
+        
+        const max = Math.max(...lineWidths);
+        const min = Math.min(...lineWidths);
+        const diff = max - min;
+        
+        // Penalty favors fewer lines, then better balance
+        const penalty = (lineWidths.length * 1000) + diff;
+
+        if (penalty < minDifference) {
+          minDifference = penalty;
+          bestWidth = w;
+        }
+      }
+
+      // Apply the balanced width
+      element.style.maxWidth = `${bestWidth + 1}px`; // +1 for safety
+      element.style.display = 'block';
+    });
+  }
+
+  // Run on load and resize
+  window.addEventListener('load', balanceText);
+  window.addEventListener('resize', balanceText);
+  
+  // For Astro View Transitions
+  document.addEventListener('astro:after-swap', balanceText);
+</script>
+
+<style>
+  .balanced-text-container {
+    display: block;
+    width: fit-content;
+    max-width: 100%;
+  }
+</style>

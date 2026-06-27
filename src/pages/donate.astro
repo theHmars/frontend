@@ -1,0 +1,277 @@
+---
+import Layout from "@layouts/Layout.astro";
+import Container from "@components/Container.astro";
+import PageHeader from "@components/PageHeader.astro";
+---
+
+<Layout title="Contribute" description="Support independent news reporting.">
+  <Container>
+    <div id="donate-container" class="pt-24 pb-20 space-y-24 animate" data-key={import.meta.env.PUBLIC_RAZORPAY_KEY_ID || ''}>
+      <PageHeader 
+        title="Contribute" 
+        subtitle="Support Independent News" 
+        description="thehmars is an independent portal for global and regional reporting. This system is currently in Demonstration Mode to showcase the technical integration."
+      />
+
+      <div class="max-w-4xl mx-auto space-y-24">
+        
+        {(import.meta.env.PUBLIC_RAZORPAY_KEY_ID || '').startsWith('rzp_test_') && (
+          <div class="bg-red-900/10 border border-red-900/30 p-6 rounded-[2rem] flex flex-col md:flex-row items-center gap-6 animate">
+            <div class="h-12 w-12 rounded-full bg-red-900/20 flex items-center justify-center text-red-500 shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+            </div>
+            <div class="text-center md:text-left space-y-1">
+              <h4 class="text-[10px] uppercase tracking-[0.4em] text-red-500 font-bold">Demo Environment Active</h4>
+              <p class="text-[11px] text-neutral-500 uppercase tracking-widest leading-relaxed">
+                No real funds will be transferred. Use <a href="https://razorpay.com/docs/payments/payments/test-card-details/" target="_blank" class="text-white underline decoration-red-600/50 hover:text-red-500 transition-colors">Razorpay Test Credentials</a> to simulate a contribution.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Custom Amount & Action */}
+        <div class="space-y-8">
+          <div class="flex items-center gap-4 border-b border-neutral-900 pb-2 mb-8">
+            <h3 class="text-[10px] uppercase tracking-[0.4em] text-red-500 font-bold">Choose your Contribution</h3>
+            <div class="h-[1px] flex-1 bg-neutral-900"></div>
+          </div>
+
+          <div class="bg-neutral-950 border border-neutral-900 p-8 md:p-12 rounded-[2rem] space-y-10 relative overflow-hidden">
+            <div class="space-y-6">
+              <div class="space-y-2">
+                <p class="text-neutral-500 text-xs font-light tracking-wide leading-relaxed">
+                  Enter the amount you wish to contribute to the portal's operations. Every contribution helps us maintain our independent voice.
+                </p>
+              </div>
+              <div class="space-y-2 relative">
+                <span class="absolute left-6 top-[24px] md:top-[16px] text-red-500 font-bold text-xl">₹</span>
+                <input 
+                  type="number" 
+                  id="custom-amount"
+                  placeholder="000"
+                  class="w-full bg-neutral-900 border border-neutral-800 pl-14 pr-4 py-4 text-white text-xl focus:outline-none focus:border-red-600/50 transition-all rounded-xl font-black appearance-none"
+                />
+              </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+              <div class="space-y-2">
+                <label for="display-name" class="block text-[9px] uppercase tracking-[0.3em] text-neutral-500 font-bold">Display Name / Identity</label>
+                <input 
+                  type="text" 
+                  id="display-name" 
+                  placeholder="e.g. John Doe"
+                  class="w-full bg-neutral-900 border border-neutral-800 px-4 py-3 text-white text-sm focus:outline-none focus:border-red-600/50 transition-all rounded-xl font-light"
+                />
+                <div class="flex items-center gap-2 pt-1">
+                  <input type="checkbox" id="is-anonymous" class="rounded-sm bg-neutral-900 border-neutral-800" />
+                  <label for="is-anonymous" class="text-[9px] uppercase tracking-widest text-neutral-700 font-medium">Stay Anonymous</label>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <label for="support-message" class="block text-[9px] uppercase tracking-[0.3em] text-neutral-500 font-bold">Editorial Note (Optional)</label>
+                <textarea 
+                  id="support-message" 
+                  placeholder="A short note of support..."
+                  class="w-full bg-neutral-900 border border-neutral-800 px-4 py-3 text-white text-sm focus:outline-none focus:border-red-600/50 transition-all rounded-xl font-light min-h-[80px] resize-none"
+                ></textarea>
+              </div>
+            </div>
+
+            <button 
+              id="donate-btn"
+              class="w-full bg-white text-black py-5 uppercase tracking-[0.3em] text-xs font-bold hover:bg-red-600 hover:text-white transition-all rounded-xl disabled:opacity-50"
+            >
+              Initialize Test Transmission
+            </button>
+          </div>
+        </div>
+
+        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+        {/* Info Section */}
+        <div class="grid md:grid-cols-2 gap-16 pt-12">
+           <div class="space-y-4">
+              <h4 class="text-[10px] uppercase tracking-[0.4em] text-red-500 font-bold">Allocation of Funds</h4>
+              <p class="text-xs text-neutral-500 leading-relaxed font-light">
+                Contributions are allocated towards infrastructure costs, investigative reporting, and the expansion of our news desks to cover more regions.
+              </p>
+           </div>
+           <div class="space-y-4">
+              <h4 class="text-[10px] uppercase tracking-[0.4em] text-white font-bold">Supporters Wall</h4>
+              <p class="text-xs text-neutral-500 leading-relaxed font-light">
+                We are currently building a Dynamic Supporters Wall to recognize our community. All contributions will be permanently recorded in the portal's history.
+              </p>
+           </div>
+        </div>
+      </div>
+    </div>
+  </Container>
+
+  {/* Custom Thank You Modal */}
+  <div id="thank-you-modal" class="fixed inset-0 z-[100] flex items-center justify-center hidden opacity-0 transition-opacity duration-500">
+    <div class="absolute inset-0 bg-black/90 backdrop-blur-md pointer-events-none"></div>
+    <div class="relative z-10 w-[90%] max-w-md bg-neutral-950 border border-neutral-800 p-12 text-center flex flex-col items-center justify-center space-y-6 rounded-[2rem] shadow-2xl transform scale-95 transition-transform duration-500">
+      <div class="h-20 w-20 rounded-full border border-red-600/20 flex items-center justify-center bg-red-600/5 text-red-500">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+      </div>
+      <div class="space-y-2">
+        <h2 class="text-2xl font-bold uppercase tracking-[0.2em] text-white">Transmission Verified</h2>
+        <p class="text-neutral-500 text-[10px] font-bold tracking-[0.3em] uppercase leading-relaxed max-w-xs mx-auto">
+          Thank you for supporting independent journalism.
+        </p>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { supabase } from "@lib/supabase";
+
+  const setupDonations = async () => {
+    const container = document.getElementById("donate-container");
+    const razorpayKey = container?.getAttribute("data-key") || "";
+    const customInput = document.getElementById("custom-amount") as HTMLInputElement | null;
+    const displayNameInput = document.getElementById("display-name") as HTMLInputElement | null;
+    const anonymousCheckbox = document.getElementById("is-anonymous") as HTMLInputElement | null;
+    const messageInput = document.getElementById("support-message") as HTMLTextAreaElement | null;
+    const donateBtn = document.getElementById("donate-btn") as HTMLButtonElement | null;
+
+    donateBtn?.addEventListener("click", async () => {
+      const amount = customInput?.value;
+      if (!amount || parseFloat(amount) <= 0) {
+        alert("Please enter a valid amount.");
+        return;
+      }
+
+      if (donateBtn) {
+        donateBtn.disabled = true;
+        donateBtn.innerText = "Initializing Transmission...";
+      }
+
+      try {
+        const { data: orderData, error: orderError } = await supabase.functions.invoke('create-order', {
+          body: { amount: parseFloat(amount) }
+        });
+        if (orderError) throw new Error(orderError.message);
+        if (orderData?.error) throw new Error(orderData.error);
+        
+        const order = orderData;
+
+        const options = {
+          key: razorpayKey,
+          amount: order.amount,
+          currency: "INR",
+          name: "thehmars portal",
+          description: "Editorial Support",
+          order_id: order.id,
+          handler: async (response: any) => {
+            if (donateBtn) donateBtn.innerText = "Verifying Transmission...";
+            try {
+              const { data: result, error: verifyError } = await supabase.functions.invoke('verify-payment', {
+                body: {
+                  ...response,
+                  amount: parseFloat(amount),
+                  display_name: displayNameInput?.value || "Anonymous Supporter",
+                  is_anonymous: anonymousCheckbox?.checked || false,
+                  message: messageInput?.value || null
+                }
+              });
+
+
+              if (verifyError || result?.error) {
+                console.error("Verification failed:", verifyError || result?.error);
+                alert("Payment verification failed. Please contact our editorial desk.");
+                if (donateBtn) {
+                  donateBtn.disabled = false;
+                  donateBtn.innerText = "Confirm Contribution";
+                }
+                return;
+              }
+
+
+              if (result.success) {
+                if (donateBtn) donateBtn.innerText = "Transmission Success";
+                
+                const modal = document.getElementById("thank-you-modal");
+                const modalInner = modal?.querySelector('.relative');
+                
+                if (modal && modalInner) {
+                  modal.classList.remove('hidden');
+                  setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    modalInner.classList.remove('scale-95');
+                    modalInner.classList.add('scale-100');
+                  }, 50);
+
+                  setTimeout(() => {
+                    window.location.href = '/';
+                  }, 2500);
+                } else {
+                  alert("Thank you for your support.");
+                  window.location.href = '/';
+                }
+              } else {
+                console.error("Verification failed:", result);
+                alert("Payment verification failed. Please contact our editorial desk.");
+                if (donateBtn) {
+                  donateBtn.disabled = false;
+                  donateBtn.innerText = "Confirm Contribution";
+                }
+              }
+            } catch (err: any) {
+              console.error("Handler error:", err);
+              alert("An error occurred during verification.");
+              if (donateBtn) {
+                donateBtn.disabled = false;
+                donateBtn.innerText = "Confirm Contribution";
+              }
+            }
+          },
+          prefill: {
+            name: "",
+            email: ""
+          },
+          theme: { color: "#B91C1C" },
+          modal: {
+            ondismiss: function() {
+              if (donateBtn) {
+                donateBtn.disabled = false;
+                donateBtn.innerText = "Confirm Contribution";
+              }
+            }
+          }
+        };
+
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
+      } catch (err: any) {
+        alert("Error: " + err.message);
+        if (donateBtn) {
+          donateBtn.disabled = false;
+          donateBtn.innerText = "Confirm Contribution";
+        }
+      }
+    });
+  };
+
+  document.addEventListener("astro:page-load", setupDonations);
+  setupDonations();
+</script>
+
+<style>
+  .animate {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: reveal 1s ease-out forwards;
+  }
+  @keyframes reveal {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+</style>

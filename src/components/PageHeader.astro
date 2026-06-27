@@ -1,0 +1,48 @@
+---
+import Breadcrumbs from "@components/Breadcrumbs.astro";
+
+type BreadcrumbItem = {
+  label: string;
+  href?: string;
+};
+
+type Props = {
+  title: string;
+  subtitle: string;
+  description?: string;
+  activePage?: string;
+  breadcrumbs?: BreadcrumbItem[];
+};
+
+const { title, subtitle, description, breadcrumbs = [] } = Astro.props;
+const hasAside = Astro.slots.has("aside");
+---
+
+<section class="space-y-6">
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-neutral-900 pb-6">
+    <div class="space-y-2">
+      <h1 class="text-3xl md:text-5xl font-sans font-extralight tracking-[0.2em] uppercase text-white">
+        {title}
+      </h1>
+      <p class="text-neutral-500 text-sm tracking-widest uppercase font-light">
+        {subtitle}
+      </p>
+      {description && (
+        <p class="max-w-2xl text-sm font-light leading-relaxed text-neutral-400 md:text-[15px]">
+          {description}
+        </p>
+      )}
+    </div>
+  </div>
+
+  <div class:list={["flex flex-col gap-8 md:flex-row md:justify-between", hasAside && "md:items-start"]}>
+    <div class="animate">
+      <Breadcrumbs items={breadcrumbs} />
+    </div>
+    {hasAside && (
+      <div class="animate md:ml-auto md:pl-8">
+        <slot name="aside" />
+      </div>
+    )}
+  </div>
+</section>

@@ -1,0 +1,233 @@
+---
+import Link from "@components/Link.astro";
+
+const navLinks = [
+  { href: "/international", label: "international" },
+  { href: "/national", label: "national" },
+  { href: "/local", label: "local" },
+  { href: "/editorial", label: "editorial" },
+  { href: "/archives", label: "archives" },
+  { href: "/about", label: "about" },
+  { href: "/socials", label: "socials" },
+];
+
+const mobileSections = [
+  {
+    title: "News Desk",
+    links: [
+      { href: "/", label: "Home" },
+      { href: "/international", label: "International" },
+      { href: "/national", label: "National" },
+      { href: "/local", label: "Local (Northeast)" },
+      { href: "/editorial", label: "Editorial" },
+      { href: "/archives", label: "Full Archive" },
+    ]
+  },
+  {
+    title: "Topics",
+    links: [
+      { href: "/topics", label: "All Topics" },
+      { href: "/topics/politics", label: "Politics" },
+      { href: "/topics/tech", label: "Tech" },
+      { href: "/topics/sports", label: "Sports" },
+      { href: "/topics/business", label: "Business" },
+      { href: "/topics/science", label: "Science" },
+      { href: "/topics/culture", label: "Culture" },
+      { href: "/topics/health", label: "Health" },
+    ]
+  },
+  {
+    title: "Portal",
+    links: [
+      { href: "/about", label: "About" },
+      { href: "/socials", label: "Connect" },
+
+    ]
+  }
+];
+---
+
+<>
+  {/* GLOBAL HEADER PILL (Adapts to Mobile/Tablet/Desktop) */}
+  <header class="fixed top-2 left-1/2 -translate-x-1/2 z-[100] w-[96%] lg:w-[98%] xl:max-w-[1800px] 2xl:max-w-[95%]">
+    <div class="bg-black/60 backdrop-blur-xl border border-neutral-800 rounded-full px-5 md:px-8 py-2 md:py-2.5 shadow-2xl transition-all duration-300">
+      <div class="flex items-center justify-between gap-4 md:grid md:grid-cols-[1fr_auto_1fr]">
+        
+        {/* Left: Back | Title | Home */}
+        <div class="flex items-center gap-3 md:gap-6">
+          {/* Back Button - Visible on md+ */}
+          <button 
+            onclick="history.back()" 
+            class="hidden md:flex items-center justify-center h-8 w-8 rounded-full border border-neutral-800 hover:border-neutral-700 hover:bg-neutral-900 transition-all text-neutral-500 hover:text-white group"
+            title="Go Back"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:-translate-x-0.5 transition-transform"><path d="m15 18-6-6 6-6"/></svg>
+          </button>
+
+          <span class="hidden md:block h-4 w-px bg-neutral-800"></span>
+
+          {/* Logo/Title */}
+          <Link href="/" underline={false}>
+            <div class="flex items-center gap-2 group">
+              <div class="font-bold uppercase tracking-tighter text-white text-xs md:text-sm transition-colors font-sans">
+                the<span class="text-red-600">hmars</span>
+              </div>
+            </div>
+          </Link>
+
+          <Link 
+            href="/" 
+            underline={false} 
+            class={`hidden md:inline-block px-4 py-1.5 rounded-full text-[9px] tracking-[0.2em] uppercase font-bold transition-all ${Astro.url.pathname === "/" ? "bg-white text-black" : "text-neutral-500 hover:text-white"}`}
+          >
+            home
+          </Link>
+        </div>
+
+        {/* Center: Main Nav Links (Centralized) */}
+        <nav class="hidden xl:flex items-center gap-1 text-[9px] tracking-[0.2em] uppercase font-bold">
+          {navLinks.map((link) => (
+            <Link 
+              href={link.href} 
+              underline={false} 
+              class={`px-4 py-1.5 rounded-full transition-all ${Astro.url.pathname.startsWith(link.href) ? "bg-white text-black hover:text-black" : "text-neutral-500 hover:text-white"}`}
+            >
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+
+        {/* Tablet Nav (Smaller set) */}
+        <nav class="hidden md:flex xl:hidden items-center gap-1 text-[9px] tracking-[0.2em] uppercase font-bold justify-center">
+            {navLinks.slice(0, 4).map((link) => (
+              <Link 
+                href={link.href} 
+                underline={false} 
+                class={`px-4 py-1.5 rounded-full transition-all ${Astro.url.pathname.startsWith(link.href) ? "bg-white text-black hover:text-black" : "text-neutral-500 hover:text-white"}`}
+              >
+                {link.label}
+              </Link>
+            ))}
+        </nav>
+        
+        {/* Right: Actions & Menu */}
+        <div class="flex items-center gap-2 md:gap-4 justify-self-end">
+          {/* Global Search Button */}
+          <button 
+            id="magnifying-glass-desktop" 
+            aria-label="Search" 
+            class="hidden md:flex h-8 w-8 items-center justify-center rounded-full border border-neutral-800 bg-neutral-950 transition-all hover:border-neutral-700 active:scale-90 text-neutral-500 hover:text-white"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          </button>
+
+          {/* Aesthetic Social Link - Internal only */}
+          <div class="hidden 2xl:flex items-center gap-3 pr-4 border-r border-neutral-900">
+            <a href="/socials" class="text-neutral-500 hover:text-white transition-colors" title="Social Directory">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg>
+            </a>
+          </div>
+
+          {/* Quick Scroll - Hidden on mobile */}
+          <div class="hidden sm:flex items-center gap-1 sm:pr-4 sm:border-r border-neutral-900">
+              <button aria-label="Scroll to Top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="p-1.5 rounded-lg hover:bg-neutral-900 text-neutral-600 hover:text-white transition-all active:scale-90" title="Scroll to Top">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
+              </button>
+              <button aria-label="Scroll to Bottom" onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})" class="p-1.5 rounded-lg hover:bg-neutral-900 text-neutral-600 hover:text-white transition-all active:scale-90" title="Scroll to Bottom">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+              </button>
+          </div>
+
+          <button id="mobile-menu-toggle-global" aria-label="Open mobile menu" class="group flex h-8 w-8 items-center justify-center rounded-full border border-neutral-800 bg-neutral-950 transition-all hover:border-neutral-700 active:scale-90">
+            <div class="flex flex-col gap-1">
+              <div class="h-0.5 w-4 bg-neutral-500 transition-all group-hover:bg-white group-hover:w-3"></div>
+              <div class="h-0.5 w-4 bg-neutral-500 transition-all group-hover:bg-white"></div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  {/* Full Page Mobile Menu Overlay */}
+  <div 
+    id="mobile-menu-overlay" 
+    class="fixed inset-0 bg-black z-[101] translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.85,0,0.15,1)] flex flex-col p-8 pt-16 shadow-2xl overflow-y-auto w-full h-full"
+  >
+    <button
+      id="mobile-menu-close"
+      aria-label="Close mobile menu"
+      class="absolute top-6 right-6 w-12 h-12 flex items-center justify-center text-neutral-500 hover:text-white transition-colors active:scale-90"
+    >
+       <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+
+    <div class="flex flex-col gap-10 max-w-sm mx-auto w-full mt-4">
+      <div class="mobile-nav-group opacity-0 translate-y-4 transition-all duration-500 border-b border-neutral-900 pb-8 mb-4 flex items-center justify-between">
+        <Link href="/" underline={false}>
+          <div class="font-bold uppercase tracking-tighter text-white text-2xl font-sans">
+            the<span class="text-red-600">hmars</span>
+          </div>
+        </Link>
+        <button id="magnifying-glass-mobile" class="h-10 w-10 flex items-center justify-center rounded-full bg-neutral-900 text-neutral-400">
+           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </button>
+      </div>
+
+      <div class="flex flex-col gap-10">
+        {mobileSections.map((section, index) => (
+          <div class="space-y-4 mobile-nav-group opacity-0 translate-y-4 transition-all duration-500" style={`transition-delay: ${index * 50}ms`}>
+             <h3 class="text-[10px] text-white font-bold tracking-[0.4em] uppercase border-b border-neutral-900 pb-2 inline-block">
+               {section.title}
+             </h3>
+             <nav class="flex flex-col gap-4 pl-2">
+               {section.links.map(link => (
+                 <a href={link.href} class="text-sm uppercase tracking-[0.2em] text-neutral-400 font-medium hover:text-white transition-colors block w-max">{link.label}</a>
+               ))}
+             </nav>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</>
+
+<script is:inline>
+  function initMobileMenu() {
+    const toggle = document.getElementById("mobile-menu-toggle-global");
+    const close = document.getElementById("mobile-menu-close");
+    const overlay = document.getElementById("mobile-menu-overlay");
+    const groups = document.querySelectorAll(".mobile-nav-group");
+    
+    if (!overlay || !toggle || !close) return;
+
+    // Prevent double initialization
+    if (toggle.dataset.initialized) return;
+    toggle.dataset.initialized = "true";
+
+    function openMenu() {
+      overlay.classList.remove("translate-x-full");
+      document.body.classList.add("overflow-hidden");
+      groups.forEach(group => group.classList.remove("opacity-0", "translate-y-4"));
+    }
+
+    function closeMenu() {
+      overlay.classList.add("translate-x-full");
+      document.body.classList.remove("overflow-hidden");
+      setTimeout(() => groups.forEach(group => group.classList.add("opacity-0", "translate-y-4")), 500);
+    }
+
+    toggle.addEventListener("click", openMenu);
+    close.addEventListener("click", closeMenu);
+    
+    overlay.querySelectorAll("a").forEach(link => link.addEventListener("click", closeMenu));
+  }
+
+  document.addEventListener("astro:page-load", initMobileMenu);
+  initMobileMenu();
+</script>
+
+<style>
+  #mobile-menu-overlay { width: 100vw; height: 100vh; height: 100dvh; }
+  #mobile-menu-overlay.translate-x-full { pointer-events: none; }
+</style>

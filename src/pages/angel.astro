@@ -1,0 +1,180 @@
+---
+import Layout from "@layouts/Layout.astro";
+---
+
+<Layout title="Angel of Grief 3D" description="A 3D model of the Angel of Grief sculpture.">
+  <div class="container mx-auto px-4 py-8">
+    <div class="mb-8">
+      <h1 class="text-4xl font-bold mb-4">Angel of Grief</h1>
+      <p class="text-lg opacity-80 max-w-2xl">
+        The Angel of Grief or the Weeping Angel is an 1894 sculpture by William Wetmore Story for the grave of his wife Emelyn Story. Rendered in 3D using Three.js.
+      </p>
+      <p class="text-sm opacity-60 mt-2">
+        "Frank" (Angel of Grief) by <a href="https://skfb.ly/Q9Tr" target="_blank" class="hover:text-white underline">misterdevious</a> (CC BY-NC-SA 4.0)
+      </p>
+    </div>
+
+    <div id="three-container" class="relative w-full aspect-video bg-black rounded-lg overflow-hidden shadow-2xl border border-white/10">
+      <div id="loading-overlay" class="absolute inset-0 flex items-center justify-center bg-black/80 z-10 transition-opacity duration-500">
+        <div class="text-center">
+          <div class="inline-block w-12 h-12 border-4 border-t-white border-white/20 rounded-full animate-spin mb-4"></div>
+          <p class="text-xl font-medium" id="loading-text">Preparing Sculpture...</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-8 prose prose-neutral dark:prose-invert">
+      <h3>Controls</h3>
+      <ul>
+        <li><strong>Rotate:</strong> Left-click and drag</li>
+        <li><strong>Zoom:</strong> Mouse wheel</li>
+        <li><strong>Pan:</strong> Right-click and drag</li>
+      </ul>
+      <p class="mt-4">
+        <a href="/" class="text-white hover:underline">← Back to Home</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+    import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+
+    const container = document.getElementById('three-container');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const loadingText = document.getElementById('loading-text');
+    
+    let scene: THREE.Scene;
+    let camera: THREE.PerspectiveCamera;
+    let renderer: THREE.WebGLRenderer;
+    let controls: OrbitControls;
+    let model: THREE.Group;
+    let animationFrameId = 0;
+    let cleanup = () => {};
+
+    async function init() {
+      if (!container || !loadingOverlay || !loadingText) return;
+      
+      // Scene
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x050505);
+      scene.fog = new THREE.Fog(0x050505, 500, 1500);
+
+      // Camera
+      camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 1, 2000);
+      camera.position.set(300, 150, 500);
+
+      // Renderer
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.0;
+      container.appendChild(renderer.domElement);
+
+      // Controls
+      controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.minDistance = 200;
+      controls.maxDistance = 1000;
+
+      // Lights
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+      scene.add(ambientLight);
+
+      const mainLight = new THREE.DirectionalLight(0xffffff, 1.5);
+      mainLight.position.set(200, 400, 200);
+      mainLight.castShadow = true;
+      scene.add(mainLight);
+
+      // Environment map
+      const pmremGenerator = new THREE.PMREMGenerator(renderer);
+      pmremGenerator.compileEquirectangularShader();
+      scene.environment = pmremGenerator.fromScene(new THREE.Scene()).texture;
+      pmremGenerator.dispose();
+
+      // Model
+      const loader = new GLTFLoader();
+      
+      loader.load(
+        '/models/frank.glb',
+        (gltf) => {
+          model = gltf.scene;
+          
+          const box = new THREE.Box3().setFromObject(model);
+          const center = box.getCenter(new THREE.Vector3());
+          const size = box.getSize(new THREE.Vector3());
+          
+          const maxDim = Math.max(size.x, size.y, size.z);
+          const scale = 400 / maxDim;
+          model.scale.setScalar(scale);
+          
+          model.position.x = -center.x * scale;
+          model.position.y = -center.y * scale;
+          model.position.z = -center.z * scale;
+          
+          model.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+              child.castShadow = true;
+              child.receiveShadow = true;
+            }
+          });
+          
+          scene.add(model);
+          
+          // Hide loading
+          loadingOverlay.style.opacity = '0';
+          setTimeout(() => {
+            loadingOverlay.style.display = 'none';
+          }, 500);
+        },
+        (xhr) => {
+          if (xhr.total) {
+            const percent = Math.round((xhr.loaded / xhr.total) * 100);
+            loadingText.innerText = `Preparing Sculpture: ${percent}%`;
+          }
+        },
+        (error) => {
+          console.error(error);
+          loadingText.innerText = 'Error loading model.';
+        }
+      );
+
+      // Handle window resize
+      window.addEventListener('resize', onWindowResize);
+      animate();
+
+      cleanup = () => {
+        window.removeEventListener('resize', onWindowResize);
+        if (animationFrameId) cancelAnimationFrame(animationFrameId);
+        controls?.dispose();
+        renderer?.dispose();
+      };
+
+      document.addEventListener('astro:before-swap', cleanup, { once: true });
+    }
+
+    function onWindowResize() {
+      if (!container || !camera || !renderer) return;
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    }
+
+    function animate() {
+      animationFrameId = requestAnimationFrame(animate);
+      if (controls) controls.update();
+      if (renderer && scene && camera) {
+        renderer.render(scene, camera);
+      }
+    }
+
+    if (container) {
+      init();
+    }
+  </script>
+</Layout>

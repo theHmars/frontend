@@ -1,0 +1,144 @@
+---
+import Head from "@components/Head.astro";
+import Header from "@components/Header.astro";
+import SubHeader from "@components/SubHeader.astro";
+import Footer from "@components/Footer.astro";
+import ExperimentalNotice from "@components/ExperimentalNotice.astro";
+import PageFind from "@components/PageFind.astro";
+import { SITE } from "@consts";
+
+type Props = {
+  title: string;
+  description: string;
+  image?: string;
+  ogType?: "website" | "article";
+  article?: {
+    title: string;
+    description: string;
+    image?: string;
+    date: Date;
+    author?: string;
+    category?: string;
+    region?: string;
+  };
+};
+
+const { title, description, image, ogType, article, ...rest } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <Head title={`${title} | ${SITE.TITLE}`} description={description} image={image} ogType={ogType} article={article} />
+  </head>
+  <body class="bg-black font-sans antialiased text-neutral-300 selection:bg-neutral-800 selection:text-white" {...rest}>
+    <div class="fixed inset-0 z-0 bg-[radial-gradient(circle_at_50%_50%,#0a0a0a,black)]"></div>
+    <Header />
+    <div id="blog-wrapper" class="relative z-10 min-h-screen flex flex-col pt-28 pb-10">
+
+      {/* Persistent Vertical Sidebar (Watermark) - Hidden on mobile */}
+      <div class="hidden sm:flex fixed right-0 top-0 bottom-0 w-12 md:w-20 items-center justify-center pointer-events-none z-20">
+        <p class="text-neutral-900 text-sm md:text-base font-bold tracking-[0.5em] md:tracking-[0.8em] uppercase [writing-mode:vertical-lr] whitespace-nowrap">
+          the<span class="text-red-900/40">hmars</span>
+        </p>
+      </div>
+
+      {/* Main Content Area - Fully Fluid Container System */}
+      <main class="relative z-0 flex-grow portal-container">
+        <div class="-mt-6 md:-mt-8 mb-2 md:mb-4">
+          <SubHeader />
+        </div>
+        <slot />
+      </main>
+
+      {/* Footer Card - Synced with Fluid Container */}
+      <div class="relative z-10 pt-10 portal-container">
+        <div class="portal-card">
+          <Footer />
+        </div>
+      </div>
+
+    </div>
+    <PageFind />
+    <ExperimentalNotice />
+  </body>
+</html>
+
+<script>
+  // Add copy buttons to code blocks
+  function addCopyButtons() {
+    const preBlocks = document.querySelectorAll('pre');
+    
+    preBlocks.forEach((pre) => {
+      if (pre.querySelector('.copy-button')) return;
+
+      pre.classList.add('group');
+      pre.classList.add('relative');
+      
+      // Create button
+      const button = document.createElement('button');
+      button.className = 'copy-button';
+      button.setAttribute('aria-label', 'Copy code');
+      button.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+      `;
+      
+      pre.appendChild(button);
+      
+      button.addEventListener('click', async () => {
+        const code = pre.querySelector('code');
+        if (code) {
+          try {
+            await navigator.clipboard.writeText(code.innerText);
+            
+            // Success state
+            button.innerHTML = `
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            `;
+            button.classList.add('text-green-500');
+            
+            setTimeout(() => {
+              button.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              `;
+              button.classList.remove('text-green-500');
+            }, 2000);
+          } catch (err) {
+            console.error('Failed to copy text: ', err);
+          }
+        }
+      });
+    });
+  }
+
+  // Run on page load and after view transitions
+  addCopyButtons();
+  document.addEventListener('astro:after-swap', addCopyButtons);
+</script>
+
+<style is:global>
+  /* Ensure smooth scrolling on blog pages */
+  html {
+    scroll-behavior: smooth;
+    overflow-y: scroll;
+    background-color: #000;
+  }
+  
+  /* Fade-in for content */
+  .animate {
+    animation: reveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes reveal {
+    from {
+      opacity: 0;
+      filter: blur(4px);
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      filter: blur(0px);
+      transform: translateY(0);
+    }
+  }
+</style>

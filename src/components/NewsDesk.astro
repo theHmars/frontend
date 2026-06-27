@@ -1,0 +1,83 @@
+---
+import { CATEGORY_INFO } from "@consts";
+
+const scopes = [
+  { name: "International", slug: "international", icon: "🌐" },
+  { name: "National", slug: "national", icon: "🇮🇳" },
+  { name: "Local", slug: "local", icon: "📍" },
+];
+
+const topics = [
+  { name: "Politics", slug: "politics" },
+  { name: "Tech", slug: "tech" },
+  { name: "Sports", slug: "sports" },
+  { name: "Business", slug: "business" },
+];
+
+const utilities = [
+  { name: "About", href: "/about" },
+
+  { name: "Connect", href: "/socials" },
+];
+---
+
+<div class="w-full bg-neutral-900/20 border border-neutral-800 rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-10 shadow-3xl animate">
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-start">
+    
+    {/* LEFT: Geographic Scopes */}
+    <div class="lg:col-span-5 space-y-6">
+      <h3 class="text-[10px] font-bold tracking-[0.5em] uppercase text-neutral-600 border-b border-neutral-900 pb-2">Geographic Scopes</h3>
+      <div class="grid grid-cols-1 gap-4">
+        {scopes.map(scope => (
+          <a href={`/${scope.slug}`} class="flex items-center justify-between group p-4 rounded-2xl border border-neutral-800/50 bg-neutral-950/40 hover:border-red-600/30 hover:bg-red-600/5 transition-all duration-300">
+            <div class="flex items-center gap-4">
+              <span class="text-xl group-hover:scale-110 transition-transform">{scope.icon}</span>
+              <div class="space-y-0.5">
+                <p class="text-sm font-bold tracking-tight text-white uppercase">{scope.name}</p>
+                <p class="text-[9px] font-light text-neutral-600 uppercase tracking-widest">{CATEGORY_INFO[scope.name].summary}</p>
+              </div>
+            </div>
+            <span class="text-neutral-800 group-hover:text-red-600 transition-colors">→</span>
+          </a>
+        ))}
+      </div>
+    </div>
+
+    {/* CENTER: Major Verticals */}
+    <div class="lg:col-span-4 space-y-6">
+      <h3 class="text-[10px] font-bold tracking-[0.5em] uppercase text-neutral-600 border-b border-neutral-900 pb-2">Verticals</h3>
+      <div class="grid grid-cols-2 gap-3">
+        {topics.map(topic => (
+          <a href={`/topics/${topic.slug}`} class="h-20 flex items-center justify-center rounded-2xl border border-neutral-800/50 bg-neutral-950/20 hover:border-neutral-700 hover:bg-neutral-900/40 transition-all text-[10px] font-bold tracking-[0.2em] uppercase text-neutral-400 hover:text-white text-center px-4">
+            {topic.name}
+          </a>
+        ))}
+      </div>
+    </div>
+
+    {/* RIGHT: Global Access & Controls */}
+    <div class="lg:col-span-3 space-y-8">
+      <div class="space-y-6">
+        <h3 class="text-[10px] font-bold tracking-[0.5em] uppercase text-neutral-600 border-b border-neutral-900 pb-2">The Portal</h3>
+        <nav class="flex flex-col gap-4">
+          {utilities.map(util => (
+            <a href={util.href} class="text-xs font-medium tracking-[0.1em] text-neutral-500 hover:text-white transition-colors flex items-center gap-3">
+               <span class="h-1 w-1 rounded-full bg-neutral-800"></span>
+               {util.name}
+            </a>
+          ))}
+        </nav>
+      </div>
+
+      <div class="pt-6 border-t border-neutral-900 flex items-center gap-4">
+        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="flex-1 h-12 rounded-xl border border-neutral-800 bg-neutral-950 flex items-center justify-center text-[10px] font-bold tracking-[0.2em] uppercase text-neutral-600 hover:text-white hover:border-neutral-600 transition-all">
+          Top
+        </button>
+        <button onclick="window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'})" class="flex-1 h-12 rounded-xl border border-neutral-800 bg-neutral-950 flex items-center justify-center text-[10px] font-bold tracking-[0.2em] uppercase text-neutral-600 hover:text-white hover:border-neutral-600 transition-all">
+          Bottom
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

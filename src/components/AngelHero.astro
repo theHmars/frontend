@@ -1,0 +1,163 @@
+<div id="hero-three-container" class="relative w-full h-full min-h-[400px] md:min-h-[60vh] cursor-grab active:cursor-grabbing">
+  <div id="hero-loading" class="absolute inset-0 flex items-center justify-center bg-transparent z-10 transition-opacity duration-700">
+    <div class="w-8 h-8 border-2 border-white/20 border-t-white/80 rounded-full animate-spin"></div>
+  </div>
+</div>
+
+<script>
+  import * as THREE from 'three';
+  import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+  import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+
+  let scene: THREE.Scene;
+  let camera: THREE.PerspectiveCamera;
+  let renderer: THREE.WebGLRenderer;
+  let controls: OrbitControls;
+  let model: THREE.Object3D;
+  let center: THREE.Vector3;
+  let scale: number;
+  const container = document.getElementById('hero-three-container');
+  const loading = document.getElementById('hero-loading');
+
+  function init() {
+    if (!container) return;
+
+    const width = container.clientWidth;
+    // Mobile/Tablet range (anything below 1133px wide, like iPads)
+    const isMobileTablet = width <= 1133; 
+
+    // Scene
+    scene = new THREE.Scene();
+
+    // Camera
+    camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 1, 5000);
+    camera.position.set(200, 200, 200); 
+
+    // Renderer
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+    container.appendChild(renderer.domElement);
+
+    // Controls
+    controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.autoRotate = false;
+    
+    // --- TARGET SETTINGS ---
+    // If mobile/tablet, use mobile settings (target 40), desktop gets target 100
+    const targetY = isMobileTablet ? 40 : 100;
+    controls.target.set(0, targetY, 0); 
+    
+    // Zoom limits
+    controls.enableZoom = true;
+    controls.minDistance = 200; 
+    controls.maxDistance = 800; 
+    
+    controls.enablePan = false;
+    controls.minPolarAngle = 0;
+    controls.maxPolarAngle = Math.PI / 2.2;
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+    scene.add(ambientLight);
+
+    const mainLight = new THREE.DirectionalLight(0xffffff, 2);
+    mainLight.position.set(200, 400, 200);
+    mainLight.castShadow = true;
+    scene.add(mainLight);
+
+    const fillLight = new THREE.PointLight(0xffffff, 1);
+    fillLight.position.set(-200, 100, -200);
+    scene.add(fillLight);
+
+    // Environment map
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    pmremGenerator.compileEquirectangularShader();
+    scene.environment = pmremGenerator.fromScene(new THREE.Scene()).texture;
+
+    // Scroll Reaction
+    window.addEventListener('scroll', () => {
+      const scrollY = window.scrollY;
+      if (model && center && scale !== undefined) {
+        model.rotation.y = scrollY * 0.001;
+        model.position.y = (-center.y * scale) + (scrollY * 0.05);
+      }
+    });
+
+    // Model
+    const loader = new GLTFLoader();
+    loader.load(
+      '/models/frank.glb',
+      (gltf) => {
+        model = gltf.scene;
+        
+        const box = new THREE.Box3().setFromObject(model);
+        center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        
+        const maxDim = Math.max(size.x, size.y, size.z);
+        
+        // Model scale: slightly smaller for all mobile/tablets to fit
+        const scaleBase = isMobileTablet ? 400 : 450;
+        scale = scaleBase / maxDim; 
+        model.scale.setScalar(scale);
+        
+        model.position.x = -center.x * scale;
+        model.position.y = -center.y * scale; 
+        model.position.z = -center.z * scale;
+
+        model.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+          }
+        });
+        
+        scene.add(model);
+        
+        // Zoom: Mobile/Tablet start a bit further (320), Large Desktop starts close (250)
+        const zoomDist = isMobileTablet ? 320 : 250;
+        const direction = new THREE.Vector3().subVectors(camera.position, controls.target).normalize();
+        camera.position.copy(direction.multiplyScalar(zoomDist).add(controls.target));
+        controls.update();
+
+        if (loading) {
+          loading.style.opacity = '0';
+          loading.style.pointerEvents = 'none';
+        }
+      },
+      undefined,
+      (error) => console.error(error)
+    );
+
+    window.addEventListener('resize', onWindowResize);
+    animate();
+  }
+
+  function onWindowResize() {
+    if (!container || !camera || !renderer || !controls) return;
+    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    
+    const width = container.clientWidth;
+    const isMobileTablet = width <= 1133;
+    controls.target.set(0, isMobileTablet ? 40 : 100, 0);
+  }
+
+  function animate() {
+    requestAnimationFrame(animate);
+    if (controls) controls.update();
+    if (renderer && scene && camera) {
+      renderer.render(scene, camera);
+    }
+  }
+
+  init();
+</script>

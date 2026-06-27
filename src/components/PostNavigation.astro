@@ -1,0 +1,59 @@
+---
+const { prevPost, nextPost } = Astro.props;
+---
+
+<div class="flex items-center pb-4">
+  <div class="grid grid-cols-2 gap-4 sm:gap-8 w-full">
+    {
+      prevPost?.id ? (
+        <a
+          href={`/${prevPost?.id}`}
+          class="group flex items-center gap-3 no-underline transition-colors duration-300 ease-in-out text-white hover:text-neutral-500 min-w-0"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            class="size-3.5 md:size-5 shrink-0 fill-none stroke-current stroke-2"
+          >
+            <polyline
+              points="12 19 5 12 12 5"
+              class="translate-x-1 transition-transform duration-300 ease-in-out group-hover:translate-x-0"
+            />
+          </svg>
+          <div class="flex items-baseline gap-2 min-w-0">
+            <span class="text-[9px] md:text-xs uppercase tracking-[0.2em] text-neutral-600 font-light shrink-0">Prev</span>
+            <span class="text-sm truncate uppercase tracking-wider font-medium hidden sm:inline">{prevPost?.data.title}</span>
+          </div>
+        </a>
+      ) : (
+        <div />
+      )
+    }
+
+    {
+      nextPost?.id ? (
+        <a
+          href={`/${nextPost?.id}`}
+          class="group flex flex-row-reverse items-center gap-3 no-underline transition-colors duration-300 ease-in-out text-white hover:text-neutral-500 min-w-0 text-right"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            class="size-3.5 md:size-5 shrink-0 fill-none stroke-current stroke-2"
+          >
+            <polyline
+              points="12 5 19 12 12 19"
+              class="-translate-x-1 transition-transform duration-300 ease-in-out group-hover:translate-x-0"
+            />
+          </svg>
+          <div class="flex flex-row-reverse items-baseline gap-2 min-w-0">
+            <span class="text-[9px] md:text-xs uppercase tracking-[0.2em] text-neutral-600 font-light shrink-0">Next</span>
+            <span class="text-sm truncate uppercase tracking-wider font-medium text-right hidden sm:inline">{nextPost?.data.title}</span>
+          </div>
+        </a>
+      ) : (
+        <div />
+      )
+    }
+  </div>
+</div>

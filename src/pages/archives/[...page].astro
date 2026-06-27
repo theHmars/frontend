@@ -1,0 +1,123 @@
+---
+import { type CollectionEntry, getCollection } from "astro:content";
+import type { Page } from "astro";
+import BlogLayout from "@layouts/BlogLayout.astro";
+import Container from "@components/Container.astro";
+import ArchiveEntry from "@components/ArchiveEntry.astro";
+
+export async function getStaticPaths({ paginate }: any) {
+  const allPosts = (await getCollection("blog"))
+    .filter((post) => !post.data.draft)
+    .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+    
+  return paginate(allPosts, { pageSize: 20 });
+}
+
+type Props = {
+  page: Page<CollectionEntry<"blog">>;
+};
+
+const { page } = Astro.props;
+const data = page.data;
+
+type Acc = {
+  [year: string]: CollectionEntry<"blog">[];
+};
+
+const posts = data.reduce((acc: Acc, post) => {
+  const year = post.data.date.getFullYear().toString();
+  if (!acc[year]) {
+    acc[year] = [];
+  }
+  acc[year].push(post);
+  return acc;
+}, {});
+
+const years = Object.keys(posts).sort((a, b) => parseInt(b) - parseInt(a));
+---
+
+<BlogLayout title="Full Archive" description="Chronological record of all news reports and curated insights.">
+  <div class="bg-neutral-950/50 backdrop-blur-2xl border border-neutral-800 rounded-[2rem] md:rounded-[3rem] shadow-2xl overflow-hidden mt-0">
+    <Container>
+      <div class="pt-24 pb-20 space-y-20 animate show">
+      
+      {/* Header */}
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-neutral-900 pb-10">
+        <div class="space-y-4">
+          <h1 class="text-4xl md:text-6xl font-bold tracking-tighter text-white uppercase">Archive</h1>
+          <p class="text-neutral-500 text-xs md:text-sm tracking-[0.3em] uppercase font-light">
+            Full Chronological Record {page.lastPage > 1 ? `• Page ${page.currentPage}` : ""}
+          </p>
+        </div>
+        <div class="flex items-center gap-3 border border-neutral-900 bg-neutral-900/20 px-4 py-2 rounded-full">
+            <span class="text-[8px] font-bold tracking-[0.3em] uppercase text-neutral-600">Archive Model:</span>
+            <span class="text-[8px] font-bold tracking-[0.3em] uppercase text-white">Automated Scrape & Post</span>
+        </div>
+      </div>
+
+      {/* Post List by Year */}
+      <div class="space-y-16">
+        {years.map((year) => (
+          <section class="space-y-8 relative">
+            <div class="text-neutral-900 text-7xl md:text-9xl font-sans font-bold tracking-tighter absolute -left-4 md:-left-8 -top-8 pointer-events-none select-none z-0 opacity-40">
+              {year}
+            </div>
+            
+            <ul class="divide-y divide-neutral-900/50 relative z-10">
+              {posts[year].map((post) => (
+                <ArchiveEntry
+                  href={`/${post.id.split('/').pop()}`}
+                  date={post.data.date.toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}
+                  title={post.data.title}
+                  description={post.data.description}
+                  image={post.data.image}
+                  region={post.data.region}
+                  badges={[
+                    { label: post.data.category || 'Reflections', tone: 'accent' },
+                    ...((!post.data.language || post.data.language === 'en') ? [{ label: 'Eng', tone: 'muted' as const }] : []),
+                    ...(post.data.language === 'mizo' ? [{ label: 'Miz', tone: 'muted' as const }] : []),
+                  ]}
+                />
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+
+      {/* Pagination Controls */}
+      {page.lastPage > 1 && (
+        <nav class="flex items-center justify-start gap-10 py-10 border-t border-neutral-900">
+          {page.url.prev ? (
+            <a href={page.url.prev} class="group flex items-center gap-2 no-underline transition-colors duration-300 ease-in-out text-white hover:text-neutral-500">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left translate-x-1 transition-transform duration-300 group-hover:translate-x-0"><path d="m15 18-6-6 6-6"/></svg>
+              <span class="text-xs uppercase tracking-[0.2em] font-bold">Prev</span>
+            </a>
+          ) : (
+            <span class="flex items-center gap-2 text-neutral-800 cursor-not-allowed opacity-50">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left"><path d="m15 18-6-6 6-6"/></svg>
+              <span class="text-xs uppercase tracking-[0.2em] font-bold">Prev</span>
+            </span>
+          )}
+          
+          <span class="text-[10px] tracking-[0.4em] uppercase text-neutral-700 font-bold">
+            {page.currentPage} / {page.lastPage}
+          </span>
+
+          {page.url.next ? (
+            <a href={page.url.next} class="group flex items-center gap-2 no-underline transition-colors duration-300 ease-in-out text-white hover:text-neutral-500">
+              <span class="text-xs uppercase tracking-[0.2em] font-bold">Next</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right -translate-x-1 transition-transform duration-300 group-hover:translate-x-0"><path d="m9 18 6-6-6-6"/></svg>
+            </a>
+          ) : (
+            <span class="flex items-center gap-2 text-neutral-800 cursor-not-allowed opacity-50">
+              <span class="text-xs uppercase tracking-[0.2em] font-bold">Next</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><path d="m9 18 6-6-6-6"/></svg>
+            </span>
+          )}
+        </nav>
+      )}
+
+    </div>
+  </Container>
+</div>
+</BlogLayout>

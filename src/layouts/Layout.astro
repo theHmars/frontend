@@ -1,0 +1,53 @@
+---
+import Head from "@components/Head.astro";
+import Header from "@components/Header.astro";
+import SubHeader from "@components/SubHeader.astro";
+import Footer from "@components/Footer.astro";
+import ExperimentalNotice from "@components/ExperimentalNotice.astro";
+import PageFind from "@components/PageFind.astro";
+import { SITE } from "@consts";
+
+type Props = {
+  title: string;
+  description: string;
+  image?: string;
+  ogType?: "website" | "article";
+  article?: {
+    title: string;
+    description: string;
+    image?: string;
+    date: Date;
+    author?: string;
+    category?: string;
+    region?: string;
+  };
+};
+
+const { title, description, image, ogType, article, ...rest } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <Head title={`${title} | ${SITE.TITLE}`} description={description} image={image} ogType={ogType} article={article} />
+  </head>
+  <body class="bg-black selection:bg-neutral-800 selection:text-white" {...rest}>
+    <div class="fixed inset-0 z-0 bg-[radial-gradient(circle_at_50%_50%,#0a0a0a,black)]"></div>
+    <Header />
+    <main class="relative z-10 pt-28 pb-10">
+      <div class="portal-container -mt-6 md:-mt-8 mb-2 md:mb-4">
+          <SubHeader />
+      </div>
+      <div class="portal-container portal-card min-h-[80vh]">
+        <slot />
+      </div>
+    </main>
+    <div class="relative z-10 pb-10">
+      <div class="portal-container portal-card">
+        <Footer />
+      </div>
+    </div>
+    <PageFind />
+    <ExperimentalNotice />
+  </body>
+</html>

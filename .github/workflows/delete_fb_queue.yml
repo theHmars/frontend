@@ -1,0 +1,35 @@
+name: Emergency Delete FB Queue
+on: workflow_dispatch
+jobs:
+  delete-queue:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Delete All Scheduled Posts
+      env:
+        FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+        FB_PAGE_ACCESS_TOKEN: ${{ secrets.FB_PAGE_ACCESS_TOKEN }}
+      run: |
+        python -c '
+        import os, requests, time
+        PAGE_ID = os.environ.get("FB_PAGE_ID")
+        ACCESS_TOKEN = os.environ.get("FB_PAGE_ACCESS_TOKEN")
+        BASE_URL = "https://graph.facebook.com/v20.0"
+        
+        while True:
+            url = f"{BASE_URL}/{PAGE_ID}/scheduled_posts"
+            params = {"access_token": ACCESS_TOKEN, "limit": 100}
+            res = requests.get(url, params=params).json()
+            data = res.get("data", [])
+            if not data:
+                print("No more scheduled posts.")
+                break
+            for post in data:
+                post_id = post["id"]
+                del_url = f"{BASE_URL}/{post_id}"
+                d_res = requests.delete(del_url, params={"access_token": ACCESS_TOKEN})
+                if d_res.status_code == 200:
+                    print(f"Deleted {post_id}")
+                else:
+                    print(f"Failed to delete {post_id}: {d_res.text}")
+            time.sleep(1)
+        '

@@ -1,0 +1,173 @@
+---
+import Layout from "@layouts/Layout.astro";
+
+const title = "About";
+const description = "Behind the Node";
+---
+
+<Layout title={`${title}`} description={description}>
+  <div class="relative py-16 md:py-24 overflow-hidden">
+    
+    {/* Background Decorative Element */}
+    <div class="fixed inset-0 flex items-center justify-center opacity-[0.03] select-none pointer-events-none">
+      <span class="text-[40vw] font-sans font-bold uppercase tracking-tighter leading-none text-red-600">
+        MAR
+      </span>
+    </div>
+
+    <div class="relative z-10 max-w-4xl mx-auto space-y-24">
+      
+      {/* Header Section */}
+      <section class="space-y-6 border-b border-neutral-900 pb-16 text-left">
+        <h1 class="text-4xl md:text-7xl font-sans font-bold tracking-tight uppercase text-white leading-tight animate">
+          Independent <span class="text-red-600">Global</span> News
+        </h1>
+        <p class="text-neutral-500 text-xs md:text-sm tracking-[0.5em] uppercase font-bold animate">
+          Curating reports for the Hmar community and beyond.
+        </p>
+      </section>
+
+      {/* About Content */}
+      <article class="grid grid-cols-1 md:grid-cols-12 gap-12 text-left">
+        <div class="md:col-span-8 space-y-12 animate">
+          <div class="space-y-8">
+            <h2 class="text-2xl md:text-3xl text-white font-bold tracking-tight uppercase">
+              The Mission
+            </h2>
+            
+            <div class="space-y-6 text-neutral-400 font-light leading-relaxed tracking-wide text-base md:text-lg">
+              <p>
+                <span class="text-white font-bold uppercase tracking-widest mr-2">thehmars</span> is a transition from a personal digital journal to a high-volume, professional news outlet. Our goal is to provide a comprehensive, unfiltered view of our world, focusing on regional developments in Northeast India while maintaining a global perspective.
+              </p>
+
+              <p>
+                We believe in the power of independent reporting. In an era of fragmented information, we aim to be a centralized hub for stories that matter—from grassroots community updates to international geopolitics.
+              </p>
+
+              <p>
+                Every report curated or produced by <span class="text-white font-bold underline decoration-red-600 underline-offset-4">thehmars</span> follows a strict hierarchical taxonomy, ensuring that readers can easily navigate between International, National, and Local news desks.
+              </p>
+            </div>
+          </div>
+
+          <div class="pt-12 border-t border-neutral-900 space-y-8 animate">
+            <h2 class="text-2xl md:text-3xl text-white font-bold tracking-tight uppercase">
+              The Workflow
+            </h2>
+            <div class="space-y-6 text-neutral-400 font-light leading-relaxed tracking-wide text-base md:text-lg">
+              <p>
+                To maintain a high-frequency reporting cadence, <span class="text-white font-bold uppercase tracking-widest mr-2">thehmars</span> utilizes a fully automated "Scrape and Post" model. Our infrastructure is designed to bridge the gap between multiple professional sources and a unified, clean reading environment.
+              </p>
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 py-4">
+                <div class="space-y-2">
+                  <h4 class="text-white text-sm font-bold uppercase tracking-wider">High-Frequency Updates</h4>
+                  <p class="text-neutral-500 text-xs font-light leading-relaxed">The portal updates 4 times daily (Morning, Noon, Evening, Night) ensuring a fresh headline mosaic for every visit.</p>
+                </div>
+                <div class="space-y-2">
+                  <h4 class="text-white text-sm font-bold uppercase tracking-wider">Raw Reporting</h4>
+                  <p class="text-neutral-500 text-xs font-light leading-relaxed">We strictly avoid AI rewriting. Content is scraped, cleaned of boilerplate, and posted in its original journalistic integrity.</p>
+                </div>
+                <div class="space-y-2">
+                  <h4 class="text-white text-sm font-bold uppercase tracking-wider">Automated Curation</h4>
+                  <p class="text-neutral-500 text-xs font-light leading-relaxed">Our scripts identify subject desks and regional categories programmatically, prioritizing speed and technical transparency.</p>
+                </div>
+                <div class="space-y-2">
+                  <h4 class="text-white text-sm font-bold uppercase tracking-wider">Zero Duplication</h4>
+                  <p class="text-neutral-500 text-xs font-light leading-relaxed">Intelligent hashing and slug-matching ensure that the same story is never reported twice, maintaining a lean archive.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-12 border-t border-neutral-900 space-y-8">
+            <h3 class="text-xs tracking-[0.3em] uppercase text-neutral-500 font-bold">News Desks</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+              <div class="space-y-2">
+                <h4 class="text-white text-sm font-bold uppercase tracking-wider">International</h4>
+                <p class="text-neutral-500 text-xs font-light leading-relaxed">Geopolitics, global tech, and world affairs.</p>
+              </div>
+              <div class="space-y-2">
+                <h4 class="text-white text-sm font-bold uppercase tracking-wider">National</h4>
+                <p class="text-neutral-500 text-xs font-light leading-relaxed">India-wide policy changes and developments.</p>
+              </div>
+              <div class="space-y-2">
+                <h4 class="text-white text-sm font-bold uppercase tracking-wider">Local</h4>
+                <p class="text-neutral-500 text-xs font-light leading-relaxed">Deep-dives into Northeast India and Hmar regions.</p>
+              </div>
+              <div class="space-y-2">
+                <h4 class="text-white text-sm font-bold uppercase tracking-wider">Editorial</h4>
+                <p class="text-neutral-500 text-xs font-light leading-relaxed">In-depth analysis and cultural reflections.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="md:col-span-4 space-y-12 animate">
+            <div class="p-8 rounded-3xl border border-neutral-800 bg-neutral-900/20 space-y-6">
+                <h3 class="text-[10px] font-bold tracking-[0.4em] uppercase text-red-500">Infrastructure</h3>
+                <div class="space-y-4">
+                    <div class="space-y-1">
+                        <p class="text-[10px] text-neutral-500 uppercase tracking-widest">Platform</p>
+                        <p class="text-xs text-white font-bold">Astro v5.4</p>
+                    </div>
+                    <div class="space-y-1">
+                        <p class="text-[10px] text-neutral-500 uppercase tracking-widest">Styling</p>
+                        <p class="text-xs text-white font-bold">Tailwind v4</p>
+                    </div>
+                    <div class="space-y-1">
+                        <p class="text-[10px] text-neutral-500 uppercase tracking-widest">Automation</p>
+                        <p class="text-xs text-white font-bold">GitHub Actions</p>
+                    </div>
+                    <div class="space-y-1">
+                        <p class="text-[10px] text-neutral-500 uppercase tracking-widest">Identity</p>
+                        <p class="text-xs text-white font-bold">Fluid Portal System</p>
+                    </div>
+                </div>
+                <div class="pt-4">
+                    <a href="/changelog" class="text-[10px] font-bold tracking-[0.2em] uppercase text-white border-b border-neutral-800 hover:border-white transition-all pb-1">View Development Log</a>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <h3 class="text-[10px] font-bold tracking-[0.4em] uppercase text-neutral-500">Connect</h3>
+                <nav class="flex flex-col gap-4">
+                    <a href="/socials" class="text-sm text-neutral-400 hover:text-white transition-colors uppercase tracking-widest">Social Directory</a>
+                    <a href="/contact" class="text-sm text-neutral-400 hover:text-white transition-colors uppercase tracking-widest">Contact Desk</a>
+                </nav>
+            </div>
+        </aside>
+      </article>
+
+      {/* Footer Note */}
+      <footer class="pt-24 border-t border-neutral-900 flex flex-col md:flex-row justify-between items-start gap-8 animate">
+        <div class="space-y-2 text-left">
+          <p class="text-neutral-800 text-[10px] tracking-[0.6em] uppercase font-bold">
+            the<span class="text-red-900/50">hmars</span> portal v1.0
+          </p>
+          <p class="text-neutral-900 text-[8px] tracking-[0.4em] uppercase font-light italic">
+            Branch: Experimental | Status: Active
+          </p>
+        </div>
+        <a href="/" class="group flex items-center gap-3 text-neutral-600 hover:text-white transition-all duration-300 text-[10px] tracking-[0.4em] uppercase">
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:-translate-x-1"><path d="m15 18-6-6 6-6"/></svg>
+          Return to Hub
+        </a>
+      </footer>
+
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .animate {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: reveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes reveal {
+    from { opacity: 0; filter: blur(4px); transform: translateY(20px); }
+    to { opacity: 1; filter: blur(0px); transform: translateY(0); }
+  }
+</style>

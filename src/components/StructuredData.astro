@@ -1,0 +1,84 @@
+---
+import { SITE } from "@consts";
+
+interface Props {
+  type?: "article" | "website";
+  article?: {
+    title: string;
+    description: string;
+    image?: string;
+    date: Date;
+    author?: string;
+    category?: string;
+    region?: string;
+  };
+}
+
+const { type = "website", article } = Astro.props;
+
+const siteUrl = "https://thehmars.onrender.com";
+const logoUrl = `${siteUrl}/favicon.svg`;
+
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "NewsMediaOrganization",
+  "name": SITE.TITLE,
+  "url": siteUrl,
+  "logo": logoUrl,
+  "email": SITE.EMAIL,
+  "description": SITE.DESCRIPTION,
+  "sameAs": [
+    "https://x.com/thehmars.news",
+    "https://youtube.com/@thehmars.news",
+    "https://facebook.com/thehmars.news",
+    "https://instagram.com/thehmars.news"
+  ]
+};
+
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": SITE.TITLE,
+  "url": siteUrl,
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": `${siteUrl}/?q={search_term_string}`,
+    "query-input": "required name=search_term_string"
+  }
+};
+
+let articleSchema = null;
+
+if (type === "article" && article) {
+  articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    "headline": article.title,
+    "description": article.description,
+    "image": [article.image || `${siteUrl}/assets/fallback.webp`],
+    "datePublished": article.date.toISOString(),
+    "dateModified": article.date.toISOString(),
+    "author": [{
+      "@type": "Organization",
+      "name": "thehmars Editorial Desk",
+      "url": siteUrl
+    }],
+    "publisher": {
+      "@type": "NewsMediaOrganization",
+      "name": SITE.TITLE,
+      "logo": {
+        "@type": "ImageObject",
+        "url": logoUrl
+      }
+    }
+  };
+}
+---
+
+<script is:inline type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
+<script is:inline type="application/ld+json" set:html={JSON.stringify(websiteSchema)} />
+
+{article && (
+  <script is:inline type="application/ld+json" set:html={JSON.stringify(articleSchema)} />
+)}
+

@@ -1,0 +1,172 @@
+@import 'tailwindcss';
+
+@plugin '@tailwindcss/typography';
+
+@custom-variant dark (&:is(.dark *));
+@custom-variant mini (@media (width > 375px));
+
+@theme {
+  --font-sans: Geist Sans, ui-sans-serif, system-ui, sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-mono: Geist Mono, ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, 'Liberation Mono', 'Courier New', monospace;
+
+  /* FLUID DESIGN VARIABLES (Derived from Resolution Matrix) */
+  --fluid-container-max: clamp(1200px, 95vw, 1800px);
+  --fluid-gutter: clamp(1rem, 5vw, 4rem);
+  --fluid-radius: clamp(1.5rem, 4vw, 3rem);
+  
+  /* FLUID TYPOGRAPHY */
+  --text-fluid-base: clamp(0.875rem, 1vw + 0.5rem, 1rem);
+  --text-fluid-lg: clamp(1rem, 1.5vw + 0.5rem, 1.25rem);
+  --text-fluid-xl: clamp(1.25rem, 2vw + 1rem, 2.5rem);
+  --text-fluid-2xl: clamp(2rem, 4vw + 1rem, 5rem);
+}
+
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-neutral-900, currentColor);
+  }
+
+  html {
+    overflow-y: auto;
+    background-color: var(--color-black, #000000);
+    color: var(--color-neutral-300, #d4d4d4);
+    font-size: 16px; /* Base for rem */
+  }
+
+  body {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    background-color: var(--color-black, #000000);
+    color: var(--color-neutral-300, #d4d4d4);
+    margin: 0;
+    padding: 0;
+    font-size: var(--text-fluid-base);
+  }
+
+  /* FLUID CONTAINER SYSTEM */
+  .portal-container {
+    width: 95%;
+    max-width: var(--fluid-container-max);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .portal-card {
+    background-color: rgba(10, 10, 10, 0.5);
+    backdrop-filter: blur(24px);
+    border: 1px solid var(--color-neutral-800);
+    border-radius: var(--fluid-radius);
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  }
+}
+
+@layer utilities {
+  main {
+    flex: 1;
+  }
+
+  footer {
+    padding: 1.5rem 0;
+  }
+
+  article {
+    @apply prose prose-neutral max-w-full prose-invert;
+    @apply prose-img:mx-auto prose-img:rounded-sm prose-img:border prose-img:border-neutral-800;
+    @apply prose-img:shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] prose-img:w-[720px] prose-img:max-w-full prose-img:my-12;
+    @apply prose-headings:font-sans prose-headings:font-extralight prose-headings:uppercase prose-headings:text-white;
+    @apply prose-headings:tracking-[0.2em];
+    @apply prose-strong:text-white prose-em:text-neutral-100 prose-p:text-neutral-300;
+    @apply prose-p:leading-relaxed prose-p:tracking-wide prose-p:font-light;
+    @apply prose-p:text-[length:var(--text-fluid-base)];
+    @apply prose-blockquote:text-neutral-400 prose-blockquote:border-neutral-800;
+    @apply prose-a:text-white prose-a:no-underline hover:prose-a:text-neutral-400 transition-all;
+    
+    /* Inline Code Styles */
+    @apply prose-code:text-white prose-code:bg-neutral-900 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:font-mono prose-code:before:content-none prose-code:after:content-none;
+    
+    /* Code Blocks */
+    @apply prose-pre:bg-neutral-950 prose-pre:border prose-pre:border-neutral-900 prose-pre:rounded-lg prose-pre:p-4 prose-pre:relative;
+
+    /* Tables */
+    @apply prose-table:border-collapse prose-table:w-full prose-table:text-sm prose-table:border prose-table:border-neutral-800;
+    @apply prose-th:border prose-th:border-neutral-800 prose-th:text-neutral-500 prose-th:font-light prose-th:uppercase prose-th:tracking-[0.2em] prose-th:py-2 prose-th:px-4 prose-th:bg-neutral-900/30;
+    @apply prose-td:border prose-td:border-neutral-900 prose-td:py-2 prose-td:px-4 prose-td:text-neutral-400 prose-td:font-light;
+    @apply prose-tr:bg-transparent;
+  }
+
+  /* Comprehensive Syntax Highlighting (for Shiki css-variables) - Dark Only */
+  :root {
+    --shiki-color-text: #e5e5e5;
+    --shiki-color-background: transparent;
+    --shiki-token-constant: #f97316;
+    --shiki-token-string: #4ade80;
+    --shiki-token-comment: #737373;
+    --shiki-token-keyword: #f43f5e;
+    --shiki-token-parameter: #fbbf24;
+    --shiki-token-function: #3b82f6;
+    --shiki-token-string-expression: #4ade80;
+    --shiki-token-punctuation: #a3a3a3;
+    --shiki-token-link: #3b82f6;
+    --shiki-token-type: #8b5cf6;
+    --shiki-token-variable: #e5e5e5;
+    --shiki-token-property: #38bdf8;
+    --shiki-token-namespace: #f43f5e;
+  }
+
+  /* Shiki styles to ensure variables are used */
+  pre code span {
+    color: var(--shiki-token-text);
+  }
+
+  /* "Error" or highlighting in code blocks if needed */
+  .prose-pre code .error {
+    @apply bg-red-500/10 text-red-400 border-l-2 border-red-500 px-1 -mx-1;
+  }
+}
+
+.copy-button {
+  @apply absolute top-3 right-3 p-2 bg-neutral-900/80 hover:bg-neutral-800 text-white rounded opacity-0 group-hover:opacity-100 transition-all duration-300 scale-90 hover:scale-100 border border-neutral-800 z-10;
+}
+
+.animate {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #171717; /* neutral-900 */
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: #262626; /* neutral-800 */
+}
+
+/* Utility to hide scrollbars but keep functionality */
+.hide-scrollbar::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar,
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

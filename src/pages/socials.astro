@@ -1,0 +1,103 @@
+---
+import LandingLayout from "@layouts/LandingLayout.astro";
+import Header from "@components/Header.astro";
+import Footer from "@components/Footer.astro";
+import { HOME, SOCIALS } from "@consts";
+import { getIcon } from "@lib/utils";
+---
+
+<LandingLayout title={HOME.TITLE} description={HOME.DESCRIPTION}>
+  <Header />
+  <main class="relative z-10 pt-28 pb-10 px-4 md:px-0">
+    <div class="mx-auto w-full md:w-[96%] lg:w-[98%] max-w-[1200px] min-h-[70vh] bg-neutral-950/50 backdrop-blur-2xl border border-neutral-800 rounded-[2rem] md:rounded-[3rem] shadow-2xl overflow-hidden flex items-center justify-center">
+      
+      {/* Centered UI Content */}
+      <div class="flex flex-col items-center max-w-2xl w-full text-center space-y-12 md:space-y-16 animate-ui p-8 md:p-24 relative z-10">
+        
+        {/* Visual Identity */}
+        <section class="space-y-2 md:space-y-4">
+          <h1 class="text-3xl sm:text-5xl md:text-7xl font-sans font-bold text-white tracking-[0.2em] md:tracking-[0.3em] uppercase leading-tight">
+            the<span class="text-red-600">hmars</span>
+          </h1>
+          <p class="text-neutral-800 text-sm md:text-xl font-light tracking-[0.2em] md:tracking-[0.3em] uppercase">
+            Global News Directory
+          </p>
+        </section>
+
+        {/* Aesthetic Icon Row */}
+        <section class="w-full">
+            <div class="flex flex-wrap items-center justify-center gap-8 md:gap-14">
+              {SOCIALS.map(social => (
+                <a 
+                  href={social.HREF}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="social-icon text-neutral-400 hover:text-white transition-all duration-300 scale-125 cursor-pointer hover:scale-[1.35]"
+                  aria-label={social.NAME}
+                  title={social.NAME}
+                  set:html={getIcon(social.NAME)}
+                />
+              ))}
+            </div>
+        </section>
+
+        {/* Action Buttons */}
+        <section class="flex flex-col items-center gap-4 w-full max-w-xl">
+          <div class="flex flex-col gap-4 w-full">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <a 
+                href="/archives" 
+                class="group flex items-center justify-center h-12 bg-white text-black rounded-lg text-[10px] md:text-xs font-bold tracking-[0.2em] hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 uppercase"
+              >
+                FULL ARCHIVES
+              </a>
+              <a 
+                href="/about" 
+                class="group flex items-center justify-center h-12 border border-neutral-800 text-neutral-400 rounded-lg text-[10px] md:text-xs font-bold tracking-[0.2em] hover:border-neutral-600 hover:text-white transition-all duration-300 uppercase"
+              >
+                OUR MISSION
+              </a>
+            </div>
+
+
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <a 
+                href="/changelog" 
+                class="group flex items-center justify-center h-11 border border-neutral-800 text-neutral-500 rounded-lg text-[10px] md:text-xs font-medium tracking-[0.2em] hover:border-neutral-600 hover:text-white transition-all duration-300 uppercase"
+              >
+                CHANGELOG
+              </a>
+              <a 
+                href="/contact" 
+                class="group flex items-center justify-center h-11 border border-neutral-800 text-neutral-500 rounded-lg text-[10px] md:text-xs font-medium tracking-[0.2em] hover:border-neutral-600 hover:text-white transition-all duration-300 uppercase"
+              >
+                CONTACT
+              </a>
+            </div>
+          </div>
+        </section>
+      </div>
+
+    </div>
+  </main>
+  
+  <div class="relative z-10 pb-10 px-4 md:px-0">
+    <div class="mx-auto w-full md:w-[96%] lg:w-[98%] xl:max-w-[1800px] 2xl:max-w-[95%] bg-neutral-950/50 backdrop-blur-2xl border border-neutral-800 rounded-[2rem] md:rounded-[3rem] shadow-2xl overflow-hidden">
+      <Footer />
+    </div>
+  </div>
+</LandingLayout>
+
+<script>
+  import { animate } from "animejs";
+
+  // Fade in UI on load
+  animate(".animate-ui", {
+    opacity: [0, 1],
+    y: [10, 0],
+    duration: 1200,
+    ease: "out(3)",
+    delay: 200
+  });
+</script>

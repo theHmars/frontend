@@ -1,0 +1,223 @@
+---
+import { getCollection } from "astro:content";
+import BlogLayout from "@layouts/BlogLayout.astro";
+import Container from "@components/Container.astro";
+import FeedCard from "@components/FeedCard.astro";
+import NewsListRow from "@components/NewsListRow.astro";
+import Ticker from "@components/Ticker.astro";
+import SidebarWidgets from "@components/SidebarWidgets.astro";
+import { normalizeTag } from "@lib/utils";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog", ({ data }) => !data.draft);
+  
+  // Statically defined list of all possible categories to guarantee they resolve and do not 404
+  const predefinedTags = [
+    "Politics", "Sports", "Business", "Tech", "Science", "Culture", "Health", 
+    "Education", "Weather", "Entertainment", "Environment", "Celebrity", "Uncategorized"
+  ];
+  
+  // Merge static predefined tags and dynamic tags extracted from post arrays
+  const dynamicTags = posts.flatMap((post) => {
+    const mainTag = post.data.majorTag;
+    const otherTags = (post.data.tags || []).map(normalizeTag);
+    return mainTag ? [mainTag, ...otherTags] : otherTags;
+  });
+  
+  const tags = [...new Set([...predefinedTags, ...dynamicTags])];
+
+  return tags.map((tag) => {
+    const slug = normalizeTag(tag);
+    return {
+      params: { id: slug },
+      props: { tagName: tag },
+    };
+  });
+}
+
+const { id } = Astro.params;
+const { tagName } = Astro.props;
+
+const allPosts = (await getCollection("blog"))
+  .filter((post) => {
+    const isMainTag = post.data.majorTag === tagName || normalizeTag(post.data.majorTag || "") === id;
+    const isOtherTag = post.data.tags?.some((t: string) => normalizeTag(t) === id);
+    return !post.data.draft && (isMainTag || isOtherTag);
+  })
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+// Desk Descriptions
+const topicDescriptions: Record<string, string> = {
+  "politics": "Global and regional policy shifts, elections, and governance.",
+  "tech": "Digital infrastructure, AI, and the evolution of technology.",
+  "sports": "Athletic achievements and competitive tournaments.",
+  "business": "Markets, economic development, and trade.",
+  "science": "Empirical discoveries and environmental research.",
+  "culture": "Artistic expression, traditions, and societal shifts.",
+  "health": "Public health initiatives and medical advancements.",
+  "weather": "Monsoon forecasts, weather patterns, and meteorological alerts.",
+  "entertainment": "Movie releases, pop culture, music, and performance arts.",
+  "environment": "Conservation efforts, ecological developments, and climate actions.",
+  "celebrity": "Biographies, profiles, and coverage of notable figures.",
+};
+
+const description = topicDescriptions[id || ""] || `Comprehensive news coverage and curated reports on ${tagName}.`;
+
+// TIER 1: Topic Collection (Multi-Hero logic)
+const heroStories = allPosts.slice(0, 3); // Take top 3 for the mosaic
+
+const heroIds = new Set(heroStories.map(p => p.id));
+const remainingPosts = allPosts.filter(p => !heroIds.has(p.id));
+
+const mainHero = heroStories[0];
+const secondaryHeroes = heroStories.slice(1);
+
+// TIER 2: Grid (6)
+const gridPosts = remainingPosts.slice(0, 6);
+
+// TIER 3: List
+const listPosts = remainingPosts.slice(6, 14);
+---
+
+<BlogLayout title={`${tagName} Desk`} description={description}>
+  <div class="bg-neutral-950/50 backdrop-blur-2xl border border-neutral-800 rounded-[2rem] md:rounded-[3rem] shadow-2xl overflow-hidden mt-0">
+    <Ticker />
+
+    <Container>
+      <div class="pt-16 pb-12 space-y-12 md:space-y-20 animate show">
+
+        {/* Header */}
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-neutral-900 pb-10">
+          <div class="space-y-4">
+            <h1 class="text-4xl md:text-6xl font-bold tracking-tighter text-white uppercase">{tagName} Desk</h1>
+            <p class="text-neutral-500 text-xs md:text-sm tracking-[0.3em] uppercase font-light">
+              Coverage Hub • {allPosts.length} Active Reports
+            </p>
+          </div>
+          <div class="pb-2">
+            <a href={`/archives/${id}`} class="text-[10px] font-bold tracking-[0.3em] uppercase text-neutral-500 hover:text-white transition-colors border-b border-neutral-900 hover:border-white pb-1">
+                View {tagName} Archive
+            </a>
+          </div>
+        </div>
+
+        {allPosts.length === 0 ? (
+            <div class="py-32 text-center">
+                <p class="text-neutral-600 uppercase tracking-widest text-xs italic font-bold">No active reports in this desk.</p>
+            </div>
+        ) : (
+            <>
+                {/* TIER 1: TOPIC HEADLINE MOSAIC */}
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:h-[600px]">
+                    {/* Main Large Hero */}
+                    {mainHero && (
+                        <section class="lg:col-span-8 h-full group relative overflow-hidden rounded-[2rem] md:rounded-[2.5rem] border border-neutral-800 bg-neutral-900/10 shadow-3xl transition-all duration-700 hover:border-neutral-700 hover:bg-neutral-900/30">
+                        <a href={`/${mainHero.id.split('/').pop()}`} class="flex flex-col h-full">
+                            <div class="relative flex-grow overflow-hidden bg-neutral-900">
+                            <img 
+                                src={mainHero.data.image || "/assets/fallback.webp"} 
+                                alt={mainHero.data.title}
+                                class="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105 opacity-80 group-hover:opacity-100"
+                            />
+                            <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/20 to-transparent"></div>
+                            <div class="absolute top-8 left-8">
+                                <span class="rounded-full bg-white text-black px-6 py-2 text-[10px] font-bold tracking-[0.4em] uppercase shadow-2xl">
+                                Featured in {tagName}
+                                </span>
+                            </div>
+                            <div class="absolute bottom-10 left-10 right-10 space-y-4">
+                                <div class="flex items-center gap-5">
+                                    <span class="text-[10px] font-bold tracking-[0.4em] uppercase text-red-500">
+                                    {mainHero.data.category}
+                                    </span>
+                                    <span class="h-1 w-1 rounded-full bg-neutral-600"></span>
+                                    <time class="text-[10px] font-medium tracking-[0.2em] text-neutral-400 uppercase">
+                                    {mainHero.data.date.toLocaleDateString("en-US", { month: "long", day: "numeric" })}
+                                    </time>
+                                </div>
+                                <h2 class="text-3xl md:text-5xl font-bold tracking-tight text-white leading-tight uppercase">
+                                {mainHero.data.title}
+                                </h2>
+                            </div>
+                            </div>
+                        </a>
+                        </section>
+                    )}
+
+                    {/* Secondary Vertical Stack */}
+                    <div class="lg:col-span-4 flex flex-col gap-4">
+                        {secondaryHeroes.map(post => (
+                        <section class="flex-1 group relative overflow-hidden rounded-[2rem] border border-neutral-800 bg-neutral-900/10 transition-all duration-500 hover:border-neutral-700 hover:bg-neutral-900/30 h-[290px]">
+                            <a href={`/${post.id.split('/').pop()}`} class="flex flex-col h-full p-8 justify-end relative">
+                            <img 
+                                src={post.data.image || "/assets/fallback.webp"} 
+                                alt={post.data.title}
+                                class="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110 opacity-40 group-hover:opacity-60"
+                            />
+                            <div class="absolute inset-0 bg-gradient-to-t from-neutral-950 to-transparent"></div>
+                            <div class="relative z-10 space-y-3">
+                                <span class="text-[9px] font-bold tracking-[0.4em] uppercase text-red-500/80">
+                                {post.data.category} Spotlight
+                                </span>
+                                <h3 class="text-lg md:text-xl font-bold tracking-tight text-white leading-snug uppercase line-clamp-3">
+                                {post.data.title}
+                                </h3>
+                            </div>
+                            </a>
+                        </section>
+                        ))}
+                    </div>
+                </div>
+
+                {/* TIER 2: GRID */}
+                {gridPosts.length > 0 && (
+                <section class="space-y-10">
+                    <div class="flex items-center justify-between border-b border-neutral-900 pb-4">
+                        <h2 class="text-[10px] font-bold tracking-[0.5em] uppercase text-neutral-500">Latest Updates</h2>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    {gridPosts.map((post) => (
+                        <FeedCard
+                            href={`/${post.id.split('/').pop()}`}
+                            date={post.data.date.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" })}
+                            title={post.data.title}
+                            description={post.data.description}
+                            image={post.data.image}
+                            category={post.data.category}
+                            region={post.data.region}
+                        />
+                    ))}
+                    </div>
+                </section>
+                )}
+
+                {/* TIER 3: LIST & SIDEBAR */}
+                <section class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                    <div class="lg:col-span-8 space-y-10">
+                        <div class="flex items-center justify-between border-b border-neutral-900 pb-4">
+                            <h2 class="text-[10px] font-bold tracking-[0.5em] uppercase text-neutral-500">More from {tagName}</h2>
+                        </div>
+                        <ul class="space-y-4">
+                            {listPosts.map((post) => (
+                                <NewsListRow 
+                                    href={`/${post.id.split('/').pop()}`}
+                                    date={post.data.date.toLocaleDateString("en-US", { month: "short", day: "2-digit" })}
+                                    title={post.data.title}
+                                    image={post.data.image}
+                                    category={post.data.category}
+                                />
+                            ))}
+                        </ul>
+                    </div>
+
+                    <aside class="lg:col-span-4 space-y-12">
+                        <SidebarWidgets />
+                    </aside>
+                </section>
+            </>
+        )}
+
+      </div>
+    </Container>
+  </div>
+</BlogLayout>

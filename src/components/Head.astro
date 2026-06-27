@@ -1,0 +1,125 @@
+---
+import "../styles/global.css";
+import { ClientRouter } from "astro:transitions";
+import StructuredData from "./StructuredData.astro";
+
+import "@fontsource/geist-sans/300.css";
+import "@fontsource/geist-sans/400.css";
+import "@fontsource/geist-sans/700.css";
+import "@fontsource/geist-mono/400.css";
+
+interface Props {
+  title: string;
+  description: string;
+  image?: string;
+  ogType?: "website" | "article";
+  article?: {
+    title: string;
+    description: string;
+    image?: string;
+    date: Date;
+    author?: string;
+    category?: string;
+    region?: string;
+  };
+}
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
+const { title, description, image = "/assets/fallback.webp", ogType = "website", article } = Astro.props;
+
+// Use the article's image if it exists, otherwise fall back to the main layout image (which defaults to fallback.webp)
+const metaImage = article?.image || image;
+---
+
+<!-- Global Metadata -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<meta name="generator" content={Astro.generator} />
+
+<!-- Google Search Console Verification -->
+<!-- <meta name="google-site-verification" content="YOUR_VERIFICATION_TOKEN" /> -->
+
+<!-- Canonical URL -->
+<link rel="canonical" href={canonicalURL} />
+
+<!-- Primary Meta Tags -->
+<title>{title}</title>
+<meta name="title" content={title} />
+<meta name="description" content={description} />
+
+<!-- Structured Data -->
+<StructuredData type={ogType === 'article' ? 'article' : 'website'} article={article} />
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content={ogType} />
+<meta property="og:url" content={Astro.url} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={new URL(metaImage, Astro.site)} />
+
+<!-- Umami Analytics -->
+<script is:inline defer src="https://cloud.umami.is/script.js" data-website-id="8facd724-1300-40b5-b1d0-7c56437e5e76"></script>
+
+<!-- Twitter -->
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:url" content={Astro.url} />
+<meta property="twitter:title" content={title} />
+<meta property="twitter:description" content={description} />
+<meta property="twitter:image" content={new URL(metaImage, Astro.site)} />
+
+<!-- PageFind -->
+<link href="/pagefind/pagefind-ui.css" rel="stylesheet" />
+<script is:inline src="/pagefind/pagefind-ui.js"></script>
+
+<ClientRouter />
+
+<script is:inline>
+  // Force dark theme
+  document.documentElement.classList.add("dark");
+</script>
+
+<script>
+  function init() {
+    onScroll();
+    animate();
+
+    const backToTop = document.getElementById("back-to-top");
+    backToTop?.addEventListener("click", (event) => scrollToTop(event));
+
+    const backToPrev = document.getElementById("back-to-prev");
+    backToPrev?.addEventListener("click", () => window.history.back());
+
+    document.addEventListener("scroll", onScroll);
+  }
+
+  function animate() {
+    const animateElements = document.querySelectorAll(".animate");
+
+    animateElements.forEach((element, index) => {
+      setTimeout(() => {
+        element.classList.add("show");
+      }, index * 100);
+    });
+  }
+
+  function onScroll() {
+    if (window.scrollY > 0) {
+      document.documentElement.classList.add("scrolled");
+    } else {
+      document.documentElement.classList.remove("scrolled");
+    }
+  }
+
+  function scrollToTop(event: Event) {
+    event.preventDefault();
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => init());
+  document.addEventListener("astro:after-swap", () => init());
+</script>
